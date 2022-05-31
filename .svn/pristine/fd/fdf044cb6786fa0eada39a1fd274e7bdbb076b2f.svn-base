@@ -1,0 +1,162 @@
+<template>
+  <div id="app">
+    <h1>게시판</h1>
+
+    <router-link to="/posts/new">게시글 넣어보기</router-link>
+    <router-view />
+    <ul
+      v-for="(postItem, $index) in postItems"
+      :key="$index"
+      style="margin-bottom : 200px"
+    >
+      <li>
+        {{ $index + 1 }}
+        <router-link :to="{ name: 'PostView', params: { pno: postItem.pno } }">
+          게시물 제목 : {{ postItem.title }}
+        </router-link>
+        <!-- 1번째 사진 메인 -->
+        <div v-if="hasImage(postItem)">
+          <img
+            :src="imgApi + postItem.imgsrc + '/'"
+            alt=""
+            style="width : 200px; heigh : 150px;"
+          />
+        </div>
+      </li>
+    </ul>
+    <div v-if="isLoading" class="loading-spinner">
+      <pulse-loader></pulse-loader>
+    </div>
+    <div v-if="hasFetchedAllData" class="loading-spinner">
+      No More Data
+    </div>
+  </div>
+</template>
+
+<script>
+import { getPostList } from "../api/index.js";
+import { ref, onUnmounted, onMounted, onBeforeMount, computed } from "vue";
+import PulseLoader from "vue-spinner/src/PulseLoader.vue";
+
+export default {
+  data() {
+    return {
+      imgApi: "http://localhost:8082/api/display/s_"
+    };
+  },
+  components: {
+    PulseLoader
+  },
+
+  setup() {
+    const postItems = ref([]);
+    const page = ref(0);
+    const isInitialRequestLoading = ref(true);
+    const isLoading = ref(false);
+    const criteria = ref({});
+    const postCnt = ref();
+
+    const hasFetchedAllData = computed(() => {
+      return postCnt.value <= postItems.value.length;
+    });
+
+    const fetchUsers = async () => {
+      page.value++;
+
+      getPostList(page.value)
+        .then(response => {
+          for (let i = 0; i < response.data.list.length; i++) {
+            let content = response.data.list[i].content;
+
+            if (content.split('<img src="').length > 1) {
+              content = content.split('<img src="')[1].split('/">')[0];
+
+              content = content.split("/display/")[1];
+
+              console.log("src : " + content);
+
+              response.data.list[i].imgsrc = content;
+            }
+
+            postItems.value.push(response.data.list[i]);
+          }
+          criteria.value = response.data.cri;
+
+          if (postCnt.value == null) {
+            postCnt.value = response.data.postCnt;
+          }
+          console.log(
+            "총 게시물 : " +
+              postCnt.value +
+              "나온 게시물" +
+              postItems.value.length +
+              "   cri.pageNum : " +
+              criteria.value.pageNum +
+              "  cri.amount : " +
+              criteria.value.amount
+          );
+
+          // const len = postItems.value.length;
+
+          // for (let i = 0; i < len; i++) {
+          //   const post = postItems.value[i];
+          //   getAttachList(post.pno)
+          //     .then(response => {
+          //       postItems.value[i].attachList = response.data;
+          //       // console.log("게시물 이미지 >>> ");
+          //       // console.log(postItems.value[i].attachList);
+          //     })
+          //     .catch(e => console.log(e));
+          // }
+        })
+        .catch(e => console.log(e));
+    };
+
+    const handleScroll = async () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+        console.log(hasFetchedAllData.value || isLoading.value);
+        if (hasFetchedAllData.value || isLoading.value) {
+          return;
+        }
+        isLoading.value = true;
+        if (isLoading.value) {
+          console.log("로딩중");
+        }
+
+        await fetchUsers();
+
+        isLoading.value = false;
+      }
+    };
+
+    onBeforeMount(async () => {
+      await fetchUsers();
+      isInitialRequestLoading.value = false;
+    });
+
+    onMounted(() => {
+      window.addEventListener("scroll", handleScroll);
+    });
+
+    onUnmounted(() => {
+      window.removeEventListener("scroll", handleScroll);
+    });
+
+    return {
+      postItems,
+      isInitialRequestLoading,
+      isLoading,
+      hasFetchedAllData
+    };
+  },
+  methods: {
+    hasImage: function(postItem) {
+      if (postItem.imgsrc != null) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+};
+</script>

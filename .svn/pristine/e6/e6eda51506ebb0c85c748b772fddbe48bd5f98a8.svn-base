@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.vuelog.member.mapper.MemberMapper">
+	
+	<select id="read" resultType="kr.co.vuelog.member.domain.MemberDTO">
+		SELECT *
+		FROM member
+		WHERE nickname = #{nickname}
+	</select>
+	
+	<update id="update">
+		UPDATE member
+		SET nickname = #{nickname}, update_date = systimestamp
+		WHERE email = #{email}
+	</update>
+	
+	<update id="updatePw">
+		UPDATE member
+		SET password = #{password}, update_date = systimestamp
+		WHERE nickname = #{nickname}
+	</update>
+	
+	<update id="quit">
+		UPDATE member
+		SET del_status = 'y', del_date = systimestamp
+		WHERE email = #{email}
+	</update>
+	
+	<update id="alarm">
+		UPDATE member
+		SET alarm = #{alarm}
+		WHERE nickname = #{nickname}
+	</update>
+	
+	<update id="updateSubCnt">
+		UPDATE member
+		SET subscribe = (SELECT COUNT(*)
+		                 FROM subscribe
+		                 WHERE nickname = #{nickname})
+		WHERE nickname = #{nickname}
+	</update>
+	
+	<update id="setAuthKey">
+		UPDATE member
+		SET authkey = #{authkey}
+		WHERE email = #{email}
+	</update>
+	
+	<select id="confirmAuthKey" resultType="kr.co.vuelog.member.domain.MemberDTO">
+		SELECT *
+		FROM member
+		WHERE authkey = #{authkey}
+	</select>
+	
+	<update id="testUpdate">
+		UPDATE member
+		SET subscribe = 777
+		WHERE email = #{email}
+	</update>
+	
+</mapper>

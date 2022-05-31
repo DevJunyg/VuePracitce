@@ -1,0 +1,120 @@
+<template>
+  <div class="blogInfo">
+    <h1>Blog</h1>
+    <div v-if="info">
+      <h3>블로그 이름:{{ blog.blogname }}</h3>
+      <h3>블로그 소개:{{ blog.bloginfo }}</h3>
+      <h3>블로그 주소: {{ blog.id }}</h3>
+      <h3>구독자 수: {{ member.subscribe }}</h3>
+      <button @click="updateBlog">블로그 정보 수정</button>
+    </div>
+    <div v-if="update">
+      <h3>블로그 이름:<input type="text" v-model="blogname" /></h3>
+      {{ blogname }}
+      <h3>블로그 소개:<input type="text" v-model="bloginfo" /></h3>
+      {{ bloginfo }}
+      <h3>블로그 주소: {{ blog.id }}</h3>
+      <button @click="submit">등록</button>
+      <button @click="reset">취소</button>
+    </div>
+    <div>
+      <button @click="createSub(id, email)">구독하기</button>
+      <button @click="createBlock(id, email)">차단하기</button>
+      <button @click="unSub(id, email)">구독해제</button>
+      <button @click="unBlock(id, email)">차단해제</button>
+    </div>
+    <router-link :to="{ name: 'BySub', params: { email: blog.email, page: 1 } }"
+      >블로그 구독 정보</router-link
+    >
+  </div>
+</template>
+
+<script>
+import { getBlog } from "../api/index.js";
+import { getMember } from "../api/index.js";
+import { createSub } from "../api/index.js";
+import { createBlock } from "../api/index.js";
+import { unSub } from "../api/index.js";
+import { unBlock } from "../api/index.js";
+
+export default {
+  name: "blogInfo",
+  data() {
+    return {
+      info: true,
+      update: false,
+      blog: {},
+      member: {},
+      subDto: {},
+      email: "sub@test.com",
+      message: "",
+      blogname: "",
+      bloginfo: ""
+    };
+  },
+  computed: {
+    id: function() {
+      return this.$route.params.id;
+    }
+  },
+  created() {
+    this.getBlog(this.id);
+  },
+  methods: {
+    getBlog: function(id) {
+      getBlog(id)
+        .then(response => {
+          this.blog = response.data;
+          console.log(response.data);
+          getMember(this.blog.email).then(response => {
+            this.member = response.data;
+            console.log(response.data);
+          });
+        })
+        .catch(e => console.log(e));
+    },
+    createSub: function(id, email) {
+      createSub(id, email)
+        .then(response => {
+          this.message = response.data;
+          console.log(this.message);
+        })
+        .catch(e => console.log(e));
+    },
+    createBlock: function(id, email) {
+      createBlock(id, email)
+        .then(response => {
+          this.message = response.data;
+          console.log(this.message);
+        })
+        .catch(e => console.log(e));
+    },
+    unSub: function(id, email) {
+      unSub(id, email)
+        .then(response => {
+          this.message = response.data;
+          console.log(this.message);
+        })
+        .catch(e => console.log(e));
+    },
+    unBlock: function(id, email) {
+      unBlock(id, email)
+        .then(response => {
+          this.message = response.data;
+          console.log(this.message);
+        })
+        .catch(e => console.log(e));
+    },
+    updateBlog: function() {
+      this.info = false;
+      this.update = true;
+    }
+  }
+};
+</script>
+
+<style scoped>
+button {
+  margin: 10px 10px 10px 10px;
+}
+</style>

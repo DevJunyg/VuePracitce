@@ -1,0 +1,98 @@
+<template>
+  <div class="subscribes">
+    <div v-if="hasResult">
+      <h1>{{ email }}의 구독 리스트</h1>
+      <ul v-for="submember in submember" :key="submember.sno">
+        <router-link
+          :to="{ name: 'Blog', params: { id: submember.myBlog.id } }"
+        >
+          <li>구독한 닉네임 : {{ submember.nickname }}</li>
+          <li>구독한 이메일 : {{ submember.email }}</li>
+        </router-link>
+        <input
+          type="hidden"
+          name="${_csrf.parameterName}"
+          value="${_csrf.token}"
+        />
+        <li><button @click="unSub(submember.myBlog.id, email)">X</button></li>
+      </ul>
+    </div>
+    <button @click="toSub(email, page)">리스트 가져오기</button>
+  </div>
+</template>
+
+<script>
+import { toSub } from "../api/index.js";
+import { unSub } from "../api/index.js";
+
+export default {
+  name: "subscribes",
+  data: () => {
+    return {
+      submember: [],
+      id: ""
+    };
+  },
+
+  computed: {
+    hasResult: function() {
+      return this.submember.length > 0;
+    },
+    email: function() {
+      return this.$route.params.email;
+    },
+    page: function() {
+      return this.$route.params.page;
+    }
+  },
+  created() {
+    this.toSub(this.email, this.page);
+    console.log("router", this.$router);
+    console.log("route", this.$route);
+  },
+  methods: {
+    toSub: function(email, page) {
+      toSub(email, page)
+        .then(response => {
+          console.log("email: " + email);
+          this.submember = response.data;
+          console.log(response.data);
+        })
+        .catch(e => console.log(e));
+    },
+    unSub: function(id, email) {
+      if (confirm("구독을 해지하시겠습니까?")) {
+        unSub(id, email)
+          .then(response => {
+            this.message = response.data;
+            console.log(response.data);
+            this.toSub(this.email, this.page);
+          })
+          .catch(e => console.log(e));
+      }
+    }
+  }
+};
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style>
+h1,
+h2 {
+  font-weight: normal;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  display: inline-block;
+  margin: 0 10px;
+}
+
+a {
+  color: #35495e;
+}
+</style>

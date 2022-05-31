@@ -1,0 +1,76 @@
+<template>
+  <div class="post">
+    <div>
+      {{ $route.params.pno }}
+      <h1>제목 : {{ postItem.title }}</h1>
+
+      <div v-html="postItem.content"></div>
+
+      <h2>작성자 : {{ postItem.email }}</h2>
+    </div>
+    <div>
+      <button v-on:click="deletepost(this.postItem.pno)">
+        게시물 삭제 테스트
+      </button>
+    </div>
+  </div>
+</template>
+
+<script>
+import { getPost } from "../api/index.js";
+import { deletePost } from "../api/index.js";
+
+export default {
+  name: "post",
+  data: () => {
+    return {
+      postItem: {},
+      hojun: null
+    };
+  },
+
+  methods: {
+    // onclick 삭제 함수 파라미터로 pno
+    deletepost: function(pno) {
+      deletePost(pno).then(() => {
+        this.$router.replace(this.$route.query.redirect || "/posts"); // 삭제 성공시 라우팅 위치
+      });
+    }
+  },
+
+  created() {
+    // 초기 함수 정의. getPost 함수의 파라미터값을 라우터 파라미터 값, 즉 pno 로 하는 거임.
+    getPost(this.$route.params.pno)
+      .then(response => {
+        this.postItem = response.data;
+        // this.hojun = this.postItem.content.replace(/</gi, "&lt;");
+        // console.log("호준 : " + this.hojun);
+      })
+      .catch(e => {
+        console.log("error : ", e);
+      });
+  }
+};
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style>
+h1,
+h2 {
+  font-weight: normal;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  display: inline-block;
+  margin: 0 10px;
+}
+
+a {
+  color: #35495e;
+}
+</style>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.vuelog.blog.mapper.BlockMapper">
+
+	<select id="blockToList" resultType="kr.co.vuelog.member.domain.MemberDTO">
+		SELECT *
+		FROM member
+		WHERE email IN (SELECT blockemail
+		                FROM block
+		                WHERE email = #{email})
+	</select>
+	
+	<select id="blockByList" resultType="kr.co.vuelog.member.domain.MemberDTO">
+		SELECT *
+		FROM member
+		WHERE email IN (SELECT email
+		               	FROM block
+		               	WHERE blockemail = #{blockemail})
+	</select>
+	
+	<select id="searchBlock" resultType="kr.co.vuelog.blog.domain.BlockDTO">
+		SELECT *
+		FROM block
+		WHERE email = #{email} AND blockemail = #{blockemail}
+	</select>
+	
+	<select id="blockRead" resultType="kr.co.vuelog.blog.domain.BlockDTO">
+		SELECT *
+		FROM block
+		WHERE bno = #{bno}
+	</select>
+	
+	<insert id="blockInsert">
+		INSERT INTO block(bno, email, blockemail)
+		VALUES(block_seq.nextval, #{email}, #{blockemail})
+	</insert>
+
+	<delete id="blockDelete">
+		DELETE FROM block
+		WHERE bno = #{bno}
+	</delete>
+
+</mapper>

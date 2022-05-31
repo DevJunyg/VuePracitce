@@ -1,0 +1,68 @@
+<template>
+  <div class="post">
+    <div v-if="hasResult">
+      게시판 테스트
+      <ul v-for="postItem in postItems" :key="postItem.pno">
+        <li>
+          {{ postItem.pno }}
+          게시물 제목 : {{ postItem.title }} 게시물 내용 :
+          {{ postItem.content }} 게시물 작성자 : {{ postItem.email }}
+        </li>
+      </ul>
+    </div>
+    <button v-on:click="getList(1)">글 불러오기</button>
+  </div>
+</template>
+
+<script>
+import { getPostList } from "../api/index.js";
+
+export default {
+  name: "post",
+  data: () => {
+    return {
+      postItems: []
+    };
+  },
+
+  computed: {
+    hasResult: function() {
+      return this.postItems.length > 0;
+    }
+  },
+
+  methods: {
+    // 초기화 함수를 정의
+    getList: function() {
+      getPostList(1)
+        .then(response => {
+          this.postItems = response.data;
+          console.log(response.data);
+        })
+        .catch(e => console.log(e));
+    }
+  }
+};
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style>
+h1,
+h2 {
+  font-weight: normal;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  display: inline-block;
+  margin: 0 10px;
+}
+
+a {
+  color: #35495e;
+}
+</style>

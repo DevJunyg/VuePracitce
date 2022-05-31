@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.vuelog.blog.mapper.SubscribeMapper">
+	
+	<select id="subToList" parameterType="map" resultType="kr.co.vuelog.member.domain.MemberDTO">
+		<![CDATA[
+		SELECT *
+		FROM member
+		WHERE email IN (SELECT subemail
+               FROM subscribe
+               WHERE email = #{cri.email})
+        AND del_status = 'n'
+        AND rownum BETWEEN #{cri.pageNum} - 1 * #{cri.amount} AND #{cri.pageNum} * #{cri.amount}
+        ]]>
+	</select>
+	
+	<select id="subByList" parameterType="map" resultType="kr.co.vuelog.member.domain.MemberDTO">
+		<![CDATA[
+		SELECT *
+		FROM member
+		WHERE email IN (SELECT email
+               FROM subscribe
+               WHERE subemail = #{cri.email})
+        AND del_status = 'n'
+        AND rownum BETWEEN #{cri.pageNum} - 1 * #{cri.amount} AND #{cri.pageNum} * #{cri.amount}
+        ]]>
+	</select>
+	
+	<select id="searchSub" resultType="kr.co.vuelog.blog.domain.SubscribeDTO">
+		SELECT *
+		FROM subscribe
+		WHERE email = #{email} AND subemail = #{subemail}
+	</select>
+	
+	<select id="subRead" resultType="kr.co.vuelog.blog.domain.SubscribeDTO">
+		SELECT *
+		FROM subscribe
+		WHERE sno = #{sno}
+	</select>
+	
+	<insert id="subInsert">
+		INSERT INTO subscribe(sno, email, subemail)
+		VALUES(sub_seq.nextval, #{email}, #{subemail})
+	</insert>
+
+	<delete id="subDelete">
+		DELETE FROM subscribe
+		WHERE sno = #{sno}
+	</delete>
+
+</mapper>

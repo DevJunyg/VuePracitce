@@ -1,0 +1,408 @@
+<template>
+  <router-view />
+  <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
+    <h2 class="text-lg font-medium mr-auto">POST</h2>
+    <div class="w-full sm:w-auto flex mt-4 sm:mt-0">
+      <button
+        class="button text-white bg-theme-1 shadow-md mr-2"
+        v-on:click="backList"
+      >
+        목록
+      </button>
+      <div
+        class="dropdown ml-auto sm:ml-0"
+        v-if="state.email === postItem.email"
+      >
+        <button
+          class="dropdown-toggle button px-2 box text-gray-700 dark:text-gray-300"
+        >
+          <span class="w-5 h-5 flex items-center justify-center">
+            <PlusIcon class="w-4 h-4" />
+          </span>
+        </button>
+        <div class="dropdown-box dropdown w-40">
+          <div class="dropdown-box__content box dark:bg-dark-1 p-2">
+            <a
+              href="javascript:;"
+              v-on:click="editpost(postItem.pno)"
+              class="flex items-center block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md dropdown-toggle"
+            >
+              <EditIcon class="w-4 h-4 mr-2" /> 수정
+            </a>
+            <a
+              href="javascript:;"
+              v-on:click="deletepost(postItem.pno)"
+              class="flex items-center block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md dropdown-toggle"
+            >
+              <Trash2Icon class="w-4 h-4 mr-2" /> 삭제
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="intro-y news p-5 box mt-8">
+    <!-- BEGIN: Blog Layout -->
+    <h2 class="intro-y font-medium text-xl sm:text-2xl">
+      {{ postItem.title }}
+    </h2>
+    <div
+      class="intro-y text-gray-700 dark:text-gray-600 mt-3 text-xs sm:text-sm"
+    >
+      {{ moment(postItem.regdate).format("YYYY-MM-DD HH:mm") }}
+      <span class="mx-1">•</span>
+      <a class="text-theme-1 dark:text-theme-10" href="">{{
+        postItem.boardtype
+      }}</a>
+      <span class="mx-1">•</span>
+
+      <span class="font-medium">{{ postItem.viewcnt }}</span>
+      <EyeIcon
+        class="mx-auto"
+        style="width: 15px; display: inline; margin-left: 5px"
+      />
+    </div>
+    <div class="intro-y mt-6">
+      <div
+        class="intro-y text-justify leading-relaxed"
+        v-html="postItem.content"
+      ></div>
+    </div>
+    <div class="intro-y flex relative pt-16 sm:pt-6 items-center pb-6">
+      <Tippy
+        tag="a"
+        href=""
+        class="intro-x w-8 h-8 sm:w-10 sm:h-10 flex flex-none items-center justify-center rounded-full border border-gray-500 dark:border-dark-5 dark:bg-dark-5 dark:text-gray-300 text-gray-600 mr-3"
+        content="Bookmark"
+      >
+        <BookmarkIcon class="w-3 h-3" />
+      </Tippy>
+      <!-- <div class="intro-x flex mr-3">
+        <div class="intro-x w-8 h-8 sm:w-10 sm:h-10 image-fit">
+          <Tippy
+            tag="img"
+            alt="Midone Tailwind HTML Admin Template"
+            class="rounded-full border border-white zoom-in"
+            :src="require(`@/assets/images/${$f()[0].photos[0]}`)"
+            :content="$f()[0].users[0].name"
+          />
+        </div>
+        <div class="intro-x w-8 h-8 sm:w-10 sm:h-10 image-fit -ml-4">
+          <Tippy
+            tag="img"
+            alt="Midone Tailwind HTML Admin Template"
+            class="rounded-full border border-white zoom-in"
+            :src="require(`@/assets/images/${$f()[0].photos[1]}`)"
+            :content="$f()[0].users[1].name"
+          />
+        </div>
+        <div class="intro-x w-8 h-8 sm:w-10 sm:h-10 image-fit -ml-4">
+          <Tippy
+            tag="img"
+            alt="Midone Tailwind HTML Admin Template"
+            class="rounded-full border border-white zoom-in"
+            :src="require(`@/assets/images/${$f()[0].photos[2]}`)"
+            :content="$f()[0].users[2].name"
+          />
+        </div>
+      </div> -->
+      <div
+        class="absolute sm:relative -mt-12 sm:mt-0 w-full flex text-gray-700 dark:text-gray-600 text-xs sm:text-sm"
+      >
+        <div class="intro-x sm:mr-3 ml-auto">
+          좋아요 <span class="font-medium">{{ postItem.recomcnt }}</span>
+        </div>
+      </div>
+      <Tippy
+        tag="a"
+        href="javascript:;"
+        class="intro-x w-8 h-8 sm:w-10 sm:h-10 flex flex-none items-center justify-center rounded-full bg-theme-14 dark:bg-dark-5 dark:text-gray-300 text-theme-10 ml-auto sm:ml-0"
+        content="좋아요"
+      >
+        <HeartIcon class="mx-auto" />
+      </Tippy>
+    </div>
+
+    <div
+      class="intro-y flex text-xs sm:text-sm flex-col sm:flex-row items-center mt-5 pt-5 border-t border-gray-200 dark:border-dark-5"
+    >
+      <div class="flex items-center">
+        <div class="w-12 h-12 flex-none image-fit">
+          <img
+            alt="Midone Tailwind HTML Admin Template"
+            class="rounded-full"
+            src="@/assets/images/profileDefault.jpg"
+          />
+        </div>
+        <div class="ml-3 mr-auto">
+          <a href="javascript:;" class="font-medium">{{ member.nickname }}</a>
+          <div class="text-gray-600">블로그이름</div>
+        </div>
+      </div>
+      <!-- <div
+        class="flex items-center text-gray-700 dark:text-gray-600 sm:ml-auto mt-5 sm:mt-0"
+      >
+        Share this post:
+        <Tippy
+          tag="a"
+          href=""
+          class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border dark:border-dark-5 ml-2 text-gray-500 zoom-in"
+          content="Facebook"
+        >
+          <FacebookIcon class="w-3 h-3 fill-current" />
+        </Tippy>
+        <Tippy
+          tag="a"
+          href=""
+          class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border dark:border-dark-5 ml-2 text-gray-500 zoom-in"
+          content="Twitter"
+        >
+          <TwitterIcon class="w-3 h-3 fill-current" />
+        </Tippy>
+        <Tippy
+          tag="a"
+          href=""
+          class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border dark:border-dark-5 ml-2 text-gray-500 zoom-in"
+          content="Linked In"
+        >
+          <LinkedinIcon class="w-3 h-3 fill-current" />
+        </Tippy>
+      </div> -->
+    </div>
+    <!-- END: Blog Layout -->
+    <!-- BEGIN: Comments -->
+    <div class="intro-y mt-5 pt-5 border-t border-gray-200 dark:border-dark-5">
+      <div class="text-base sm:text-lg font-medium">
+        댓글 {{ postItem.comcnt }}
+      </div>
+      <div class="news__input relative mt-5" v-if="state.isLogin">
+        <MessageCircleIcon
+          class="w-5 h-5 absolute my-auto inset-y-0 ml-6 left-0 text-gray-600"
+        />
+        <input
+          class="input w-full bg-gray-200 pl-16 py-6 resize-none"
+          rows="1"
+          placeholder="댓글..."
+          v-model="commentDto.content"
+        />
+      </div>
+      <div
+        class="absolute sm:relative -mt-12 sm:mt-0 w-full flex text-gray-700 dark:text-gray-600 text-xs sm:text-sm"
+      >
+        <div class="intro-x sm:mr-3 ml-auto" v-if="state.isLogin">
+          <button
+            v-on:click="commentConfirm"
+            class="dropdown-toggle button text-white bg-theme-1 shadow-md flex items-center flex flex-none"
+            style="margin-top: 20px; width: 80px"
+          >
+            <Edit2Icon class="mx-auto" style="width: 15px; margin-right: 5px" />
+            댓글
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      class="intro-y mt-5 pb-10"
+      v-for="commentItem in commentItems"
+      :key="commentItem"
+    >
+      <div class="pt-5">
+        <div class="flex">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 flex-none image-fit">
+            <img
+              alt="Midone Tailwind HTML Admin Template"
+              class="rounded-full"
+              src="@/assets/images/profileDefault.jpg"
+            />
+          </div>
+          <div class="ml-3 flex-1">
+            <div class="flex items-center">
+              <a href="" class="font-medium">{{ commentItem.email }}</a>
+            </div>
+            <div class="text-gray-600 text-xs sm:text-sm">
+              {{ moment(commentItem.regdate).format("YYYY-MM-DD HH:mm") }}
+            </div>
+            <div class="mt-2">{{ commentItem.content }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END: Comments -->
+  </div>
+</template>
+
+<script>
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+import axiosApi from "@/api/index.ts";
+import router from "@/router";
+import moment from "moment";
+import login from "@/store/login-menu/index";
+import { computed, onBeforeMount, onMounted, onUnmounted, ref } from "vue";
+import { useRoute } from "vue-router";
+
+export default {
+  name: "post",
+  data: () => {
+    return {
+      postItem: {},
+      publicPath: process.env.BASE_URL,
+      member: {},
+      myblog: {},
+      comDto: { content: "" },
+      comItems: [],
+    };
+  },
+  setup() {
+    const commentItems = ref([]);
+    const commentDto = ref({});
+    const page = ref(0);
+    const isInitialRequestLoading = ref(true);
+    const route = useRoute();
+    const isLoading = ref(false);
+    const criteria = ref({});
+    const commentCnt = ref(0);
+    const { state } = login;
+    const commentsItemsTemp = ref([]);
+
+    const hasFetchedAllData = computed(() => {
+      return commentCnt.value <= commentItems.value.length;
+    });
+
+    const fetchDatas = async () => {
+      page.value++;
+
+      axiosApi
+        .get("/comments/pages/" + route.params.pno + "/" + page.value)
+        .then((response) => {
+          for (let i = 0; i < response.data.list.length; i++) {
+            commentItems.value.push(response.data.list[i]);
+          }
+          criteria.value = response.data.cri;
+
+          commentCnt.value = response.data.replyCnt;
+
+          console.log(
+            "총 댓글 : " +
+              commentCnt.value +
+              "나온 댓글" +
+              commentItems.value.length +
+              "   cri.pageNum : " +
+              criteria.value.pageNum +
+              "  cri.amount : " +
+              criteria.value.amount
+          );
+          console.log(commentItems.value);
+        })
+        .catch((e) => console.log(e));
+    };
+
+    const handleScroll = async () => {
+      // (window.scrollY + window.innerHeight)/document.body.scrollHeight >= 0.96
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+        console.log(hasFetchedAllData.value || isLoading.value);
+        if (hasFetchedAllData.value || isLoading.value) {
+          return;
+        }
+        isLoading.value = true;
+        if (isLoading.value) {
+          console.log("로딩중");
+        }
+        console.log("handleScroll");
+        await fetchDatas();
+
+        isLoading.value = false;
+      }
+    };
+
+    const deleteComment = async (pno, index) => {
+      axiosApi.delete("/posts/" + pno).then(() => {
+        commentItems.value.splice(index, 1);
+        commentsItemsTemp.value = commentItems.value;
+        commentItems.value = [];
+        commentItems.value = commentsItemsTemp.value;
+      });
+    };
+
+    const commentConfirm = () => {
+      commentDto.value.pno = route.params.pno;
+      commentDto.value.email = state.email;
+
+      if (
+        typeof commentDto.value.content === "undefined" ||
+        commentDto.value.content.length === 0
+      ) {
+        console.log("내용없");
+      } else {
+        axiosApi.post("/comments/new", commentDto.value).then(() => {
+          console.log("댓글 등록");
+          commentItems.value.splice(0, 0, commentDto.value);
+        });
+      }
+      fetchDatas();
+    };
+
+    onBeforeMount(async () => {
+      await fetchDatas();
+      isInitialRequestLoading.value = false;
+    });
+
+    onMounted(() => {
+      window.addEventListener("scroll", handleScroll);
+    });
+
+    onUnmounted(() => {
+      window.removeEventListener("scroll", handleScroll);
+    });
+
+    return {
+      commentItems,
+      isInitialRequestLoading,
+      isLoading,
+      hasFetchedAllData,
+      moment,
+      commentDto,
+      commentConfirm,
+      state,
+      deleteComment,
+    };
+  },
+
+  methods: {
+    // onclick 삭제 함수 파라미터로 pno
+    deletepost: function (pno) {
+      axiosApi.delete("/posts/" + pno).then(() => {
+        this.$router.replace(this.$route.query.redirect || "/posts"); // 삭제 성공시 라우팅 위치
+      });
+      return null;
+    },
+    formatDate: function (time) {
+      var date = new Date(time);
+      return this.formatDate(date, "yyyy-MM-dd hh:mm");
+    },
+    backList: function () {
+      router.go(-1);
+    },
+    editpost: function (pno) {
+      router.push("/postedit/" + pno);
+    },
+  },
+
+  created() {
+    // 초기 함수 정의. getPost 함수의 파라미터값을 라우터 파라미터 값, 즉 pno 로 하는 거임.
+    axiosApi
+      .get("/posts/" + this.$route.params.pno)
+      .then((response) => {
+        this.postItem = response.data;
+        axiosApi
+          .get("/member/" + response.data.email + "/")
+          .then((response) => {
+            this.member = response.data;
+            this.myblog = this.member.myBlog;
+          });
+      })
+      .catch((e) => {
+        console.log("error : ", e);
+      });
+  },
+};
+</script>

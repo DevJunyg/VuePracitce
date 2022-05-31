@@ -1,0 +1,8 @@
+import axios from 'axios';
+
+const axiosApi = axios.create({
+    baseURL: 'http://localhost:8082/api', // Url
+    timeout: 5000 // timeout 5초
+});
+
+export default axiosApi;

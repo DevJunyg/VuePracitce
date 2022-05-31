@@ -1,0 +1,207 @@
+package kr.co.vuelog;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import kr.co.vuelog.blog.domain.BlogDTO;
+import kr.co.vuelog.blog.service.ISubscribeService;
+import kr.co.vuelog.board.domain.Criteria;
+import kr.co.vuelog.board.domain.PostDTO;
+import kr.co.vuelog.board.domain.TblCommentDTO;
+import kr.co.vuelog.board.service.ICommentService;
+import kr.co.vuelog.board.service.IPostService;
+import kr.co.vuelog.member.domain.MemberDTO;
+import kr.co.vuelog.member.service.IMemberService;
+import lombok.extern.log4j.Log4j;
+
+@RestController
+@RequestMapping("/member")
+@Log4j
+public class MemberController {
+	
+	@Autowired
+	private IMemberService memberSvc;
+	
+	@Autowired
+	private IPostService postSvc;
+	
+	@Autowired
+	private ICommentService comSvc;
+	
+	@Autowired
+	private ISubscribeService subSvc;
+	
+	// 회원 정보 확인
+	@GetMapping(value = "/{nickname}",
+				produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+	public ResponseEntity<MemberDTO> read(@PathVariable("nickname") String nickname) {
+		
+		log.info("read : " + nickname);
+		
+		return new ResponseEntity<>(memberSvc.read(nickname), HttpStatus.OK);
+	}
+	
+	// 작성한 게시글 목록
+	@GetMapping(value = "/{nickname}/myposts",
+		   	produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+	public ResponseEntity<List<PostDTO>> getMyPosts(@PathVariable("nickname") String nickname) {
+		
+		MemberDTO readMember = memberSvc.read(nickname);
+		String email = readMember.getEmail();
+		
+		Criteria cri = new Criteria();
+		
+		cri.setAmount(10);
+		cri.setStorage('n');
+		cri.setEmail(email);
+		
+		return new ResponseEntity<>(postSvc.getListWithPaging(cri), HttpStatus.OK);
+	}
+	
+	// 임시저장된 게시글 목록
+	@GetMapping(value = "/{nickname}/mystorage",
+		   	produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+	public ResponseEntity<List<PostDTO>> getMyStorage(@PathVariable("nickname") String nickname) {
+		
+		MemberDTO readMember = memberSvc.read(nickname);
+		String email = readMember.getEmail();
+		
+		Criteria cri = new Criteria();
+		
+		cri.setAmount(10);
+		cri.setStorage('y');
+		cri.setEmail(email);
+		
+		return new ResponseEntity<>(postSvc.getListWithPaging(cri), HttpStatus.OK);
+	}
+	
+	// 작성한 댓글 목록
+	@GetMapping(value = "/{nickname}/mycomments",
+		   	produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+	public ResponseEntity<List<TblCommentDTO>> getMyComments(@PathVariable("nickname") String nickname) {
+		
+		MemberDTO readMember = memberSvc.read(nickname);
+		String email = readMember.getEmail();
+		
+		return new ResponseEntity<>(comSvc.myComment(email), HttpStatus.OK);
+	}
+	
+	// 회원 정보 수정
+	@RequestMapping(value = "/{nickname}", 
+			method = {RequestMethod.PUT, RequestMethod.PATCH},
+			consumes = "application/json",
+			produces = {MediaType.TEXT_PLAIN_VALUE})
+	public ResponseEntity<String> update(@PathVariable("nickname") String nickname,
+									 	 @RequestBody Map<String, String> param) {
+	
+	MemberDTO readMember = memberSvc.read(nickname);
+	
+	BlogDTO bDto = new BlogDTO();
+	
+	readMember.setNickname(param.get("nickname"));
+	
+	bDto.setEmail(readMember.getEmail());
+	bDto.setId(param.get("id"));
+	
+	log.info("nickname : " + nickname);
+	log.info("update nickname : " + readMember);
+	log.info("update blog address : " + bDto);
+	
+	return memberSvc.update(readMember, bDto) == 1
+			? new ResponseEntity<>("success", HttpStatus.OK)
+			: new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	// 회원 비밀번호 수정
+	@RequestMapping(value = "/password/{nickname}", 
+					method = {RequestMethod.PUT, RequestMethod.PATCH},
+					consumes = "application/json",
+					produces = {MediaType.TEXT_PLAIN_VALUE})
+	public ResponseEntity<String> updatePw(@PathVariable("nickname") String nickname,
+										   @RequestBody MemberDTO mDto) {
+		
+		log.info("update : " + mDto);
+		
+		return memberSvc.updatePw(mDto) == 1
+				? new ResponseEntity<>("success", HttpStatus.OK)
+				: new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	// 회원 알람 설정
+	@RequestMapping(value = "/{nickname}/{alarm}", 
+					method = {RequestMethod.PUT, RequestMethod.PATCH},
+					consumes = "application/json",
+					produces = {MediaType.TEXT_PLAIN_VALUE})
+	public ResponseEntity<String> alarm(@PathVariable("nickname") String nickname,
+										@PathVariable("alarm") char alarm) {
+		
+		MemberDTO readMember = memberSvc.read(nickname);
+		
+		readMember.setAlarm(alarm);
+		
+		log.info("MemberDTO : " + readMember);
+		
+		return memberSvc.alarm(readMember) == 1
+				? new ResponseEntity<>("success", HttpStatus.OK)
+				: new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	// 회원 탈퇴
+	@DeleteMapping(value = "/{nickname}",
+				   produces = {MediaType.TEXT_PLAIN_VALUE})
+	public ResponseEntity<String> quit(@PathVariable("nickname") String nickname) {
+		
+		log.info("quit : " + nickname);
+		
+		return memberSvc.quit(nickname) == 1
+				? new ResponseEntity<String>("success", HttpStatus.OK) 
+				: new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	// 이메일 인증
+	@RequestMapping(value = "/authMail/{authkey}", 
+					method = {RequestMethod.PUT, RequestMethod.PATCH},
+					consumes = "application/json",
+					produces = {MediaType.TEXT_PLAIN_VALUE})
+	public ResponseEntity<String> authConfirm(@PathVariable("authkey") String authkey) {
+		
+		log.info(authkey);
+		
+		int result = memberSvc.confirmMember(authkey);
+		
+		return result == 1
+				? new ResponseEntity<>("success", HttpStatus.OK)
+				: new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	// 자신이 구독 중인 회원 목록
+	@GetMapping(value = "/subscribes/{nickname}/{page}",
+		   	produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+	public ResponseEntity<List<MemberDTO>> getSubList(@PathVariable("page") int page,
+													  @PathVariable("nickname") String nickname) {
+		
+		MemberDTO readMember = memberSvc.read(nickname);
+		String email = readMember.getEmail();
+		
+		Criteria cri = new Criteria(page, 9);
+		
+		cri.setEmail(email);
+		
+		log.info("cri : " + cri);
+		
+		return new ResponseEntity<>(subSvc.subToList(cri), HttpStatus.OK);
+	}
+	
+}

@@ -1,0 +1,45 @@
+<template>
+  <div>
+    <form role="form">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="email"
+        v-model="email"
+      />
+      <input
+        type="text"
+        class="form-control"
+        placeholder="password"
+        v-model="password"
+      />
+    </form>
+    <button v-on:click="login({ email, password })">로그인</button>
+  </div>
+</template>
+
+<script>
+import axios from "axios";
+
+import { mapActions, mapState } from "vuex";
+
+axios.defaults.headers.common = {
+  "X-Requested-With": "XMLHttpRequest",
+  "X-CSRF-TOKEN": window.csrf_token
+};
+
+export default {
+  data() {
+    return {
+      email: "",
+      password: ""
+    };
+  },
+  methods: {
+    ...mapActions(["login"])
+  },
+  computed: {
+    ...mapState(["isLogin", "isLoginError"])
+  }
+};
+</script>

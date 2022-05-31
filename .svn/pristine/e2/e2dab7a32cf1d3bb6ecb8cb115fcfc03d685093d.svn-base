@@ -1,0 +1,82 @@
+<template>
+  <div class="postcreate">
+    <form role="form">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="email"
+        v-model="mDto.email"
+      />
+      <input
+        type="text"
+        class="form-control"
+        placeholder="password"
+        v-model="mDto.password"
+      />
+      <input
+        type="text"
+        class="form-control"
+        placeholder="nickname"
+        v-model="mDto.nickname"
+      />
+    </form>
+    <button v-on:click="addMember">회원가입</button>
+  </div>
+</template>
+
+<script>
+import axios from "axios";
+
+axios.defaults.headers.common = {
+  "X-Requested-With": "XMLHttpRequest",
+  "X-CSRF-TOKEN": window.csrf_token
+};
+export default {
+  name: "join",
+
+  data: () => {
+    return {
+      mDto: {},
+      publicPath: process.env.BASE_URL
+    };
+  },
+
+  methods: {
+    // 초기화 함수를 정의
+    addMember: function(event) {
+      event.preventDefault();
+      let vm = this;
+      axios
+        .post("http://localhost:8082/api/join/joinok", vm.mDto) // RESTful API에 POST 콜
+        .then(() => {
+          this.$router.replace(this.$route.query.redirect || "/"); // 게시글 등록 성공시 라우팅 위치
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    }
+  }
+};
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style>
+h1,
+h2 {
+  font-weight: normal;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  display: inline-block;
+  margin: 0 10px;
+}
+
+a {
+  color: #35495e;
+}
+</style>

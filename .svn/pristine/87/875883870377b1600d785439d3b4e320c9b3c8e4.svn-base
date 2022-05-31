@@ -1,0 +1,133 @@
+package kr.co.vuelog.member.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import kr.co.vuelog.blog.domain.BlogDTO;
+import kr.co.vuelog.blog.mapper.BlogMapper;
+import kr.co.vuelog.board.mappers.PostMapper;
+import kr.co.vuelog.member.domain.MemberDTO;
+import kr.co.vuelog.member.domain.ProfileDTO;
+import kr.co.vuelog.member.mapper.MemberMapper;
+import kr.co.vuelog.member.mapper.ProfileMapper;
+import kr.co.vuelog.member.service.IMemberService;
+import lombok.extern.log4j.Log4j;
+
+@Service
+@Log4j
+public class MemberServiceImpl implements IMemberService {
+	
+	@Autowired
+	private MemberMapper mapper;
+	
+	@Autowired
+	private ProfileMapper proMapper;
+	
+	@Autowired
+	private BlogMapper blogMapper;
+	
+	@Override
+	public MemberDTO read(String nickname) {
+		
+		MemberDTO readMember = mapper.read(nickname);
+		
+		log.info(readMember);
+		
+//		readMember.setMyBlog(blogMapper.read(readMember.getEmail()));
+//		
+		ProfileDTO profileDTO = proMapper.read(readMember.getEmail());
+		
+		if (profileDTO != null) {
+			readMember.setProfileDTO(profileDTO);
+		}
+		
+		return readMember;
+	}
+	
+	@Transactional
+	@Override
+	public int update(MemberDTO readMember, BlogDTO bDto) {
+		
+		proMapper.delete(readMember.getEmail());
+		
+		int result = mapper.update(readMember);
+		
+		if (result > 0) {
+			result = 0;
+			result = blogMapper.updateId(bDto);
+		}
+		
+		ProfileDTO profileDTO = readMember.getProfileDTO();
+		
+		if (result > 0 && profileDTO != null) {
+			profileDTO.setEmail(readMember.getEmail());
+			proMapper.insert(profileDTO);
+		}
+		
+		return result;
+	}
+
+	@Override
+	public int updatePw(MemberDTO mDto) {
+		return mapper.updatePw(mDto);
+	}
+	
+	@Transactional
+	@Override
+	public int quit(String nickname) {
+		
+		int result = 0;
+		
+		MemberDTO readMember = mapper.read(nickname);
+		
+		String email = readMember.getEmail();
+		
+		ProfileDTO pDto = proMapper.read(email);
+		
+		log.info("ProfileDTO : " + pDto);
+		
+		if (pDto != null) {
+			proMapper.delete(email);
+		}
+		
+		result = blogMapper.delete(email);
+		log.info("blogMapper.delete : " + result);
+		
+		if (result > 0) {
+			result = 0;
+			result = mapper.quit(email);
+			log.info("mapper.quit : " + result);
+		}
+		
+		return result;
+	}
+
+	@Override
+	public int alarm(MemberDTO mDto) {
+		return mapper.alarm(mDto);
+	}
+
+	@Override
+	public int updateSubCnt(String email) {
+		return mapper.updateSubCnt(email);
+	}
+
+	@Override
+	public int confirmMember(String authKey) {
+		
+		int result = 0;
+		
+		MemberDTO mDto = mapper.confirmAuthKey(authKey);
+		
+		log.info("인증 회원 정보 : " + mDto);
+		
+		if (mDto != null) {
+			// MemberAuth 인증된 회원으로 바꾸는 mapper
+			result = mapper.testUpdate(mDto.getEmail());
+		}
+		
+		return result;
+	}
+
+}

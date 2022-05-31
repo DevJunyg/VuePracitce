@@ -1,0 +1,149 @@
+// const path = require("path");
+
+// module.exports = {
+//   outputDir: path.resolve(__dirname, "../" + "main/webapp/resources/static"),
+//   devServer: {
+//     proxy: {
+//       "/posts": {
+//         target: "http://localhost:8081",
+//         ws: true,
+//         changeOrigin: true
+//       }
+//     }
+//   }
+// };
+
+"use strict";
+
+const targetHost = "localhost";
+
+const { styles } = require("@ckeditor/ckeditor5-dev-utils");
+
+// spring was 포트 주소 변수
+const targetPort = 8081;
+
+const path = require("path");
+
+const port = 8081;
+let cookie;
+
+const replaceCookie = function(cookie) {
+  return cookie.replace(/\s+domain=[^\s;]+;?/, "").replace(/\s+secure;?/, "");
+};
+
+module.exports = {
+  outputDir: path.resolve(__dirname, "../" + "main/webapp/resources/static"),
+  publicPath:
+    process.env.NODE_ENV === "production" ? "/resources/static/" : "/",
+
+  devServer: {
+    port: port,
+    clientLogLevel: "debug",
+    historyApiFallback: true,
+    publicPath: "/",
+    hot: true,
+    inline: true,
+
+    transportMode: "sockjs",
+    headers: {
+      "Access-Control-Allow-Origin": "*"
+    },
+
+    proxy: {
+      "^/api": {
+        target: `http://${targetHost}:${targetPort}`,
+        changeOrigin: true,
+
+        ws: true,
+        onProxyReq: proxyReq => {
+          if (proxyReq.getHeader("origin")) {
+            proxyReq.setHeader("origin", `http://${targetHost}:${targetPort}`);
+          }
+
+          if (proxyReq.getHeader("set-cookie")) {
+            proxyReq.headers["set-cookie"] = proxyReq.headers["set-cookie"].map(
+              replaceCookie
+            );
+          }
+
+          if (cookie) proxyReq.setHeader("Cookie", cookie);
+        },
+        onProxyRes: proxyRes => {
+          if (proxyRes.headers["set-cookie"]) {
+            cookie = proxyRes.headers["set-cookie"] = proxyRes.headers[
+              "set-cookie"
+            ].map(replaceCookie);
+          }
+        }
+      },
+      "^/(sse|api|sign|resources)": {
+        target: `http://${targetHost}:${targetPort}`,
+        changeOrigin: true,
+        onProxyRes: proxyRes => {
+          if (proxyRes.headers["set-cookie"]) {
+            cookie = proxyRes.headers["set-cookie"] = proxyRes.headers[
+              "set-cookie"
+            ].map(replaceCookie);
+          }
+        }
+      }
+    }
+  },
+
+  pluginOptions: {
+    moment: {
+      locales: ["ko_kr"]
+    }
+  },
+
+  // The source of CKEditor is encapsulated in ES6 modules. By default, the code
+  // from the node_modules directory is not transpiled, so you must explicitly tell
+  // the CLI tools to transpile JavaScript files in all ckeditor5-* modules.
+  transpileDependencies: [/ckeditor5-[^/\\]+[/\\]src[/\\].+\.js$/],
+
+  // Vue CLI would normally use its own loader to load .svg and .css files, however:
+  //	1. The icons used by CKEditor must be loaded using raw-loader,
+  //	2. The CSS used by CKEditor must be transpiled using PostCSS to load properly.
+  chainWebpack: config => {
+    // (1.) To handle the editor icons, get the default rule for *.svg files first:
+    const svgRule = config.module.rule("svg");
+
+    // Then you can either:
+    //
+    // * clear all loaders for existing 'svg' rule:
+    //
+    //		svgRule.uses.clear();
+    //
+    // * or exclude ckeditor directory from node_modules:
+    svgRule.exclude.add(path.join(__dirname, "node_modules", "@ckeditor"));
+
+    // Add an entry for *.svg files belonging to CKEditor. You can either:
+    //
+    // * modify the existing 'svg' rule:
+    //
+    //		svgRule.use( 'raw-loader' ).loader( 'raw-loader' );
+    //
+    // * or add a new one:
+    config.module
+      .rule("cke-svg")
+      .test(/ckeditor5-[^/\\]+[/\\]theme[/\\]icons[/\\][^/\\]+\.svg$/)
+      .use("raw-loader")
+      .loader("raw-loader");
+
+    // (2.) Transpile the .css files imported by the editor using PostCSS.
+    // Make sure only the CSS belonging to ckeditor5-* packages is processed this way.
+    config.module
+      .rule("cke-css")
+      .test(/ckeditor5-[^/\\]+[/\\].+\.css$/)
+      .use("postcss-loader")
+      .loader("postcss-loader")
+      .tap(() => {
+        return styles.getPostCssConfig({
+          themeImporter: {
+            themePath: require.resolve("@ckeditor/ckeditor5-theme-lark")
+          },
+          minify: true
+        });
+      });
+  }
+};

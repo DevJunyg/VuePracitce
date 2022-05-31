@@ -1,0 +1,41 @@
+import { createRouter, createWebHistory } from "vue-router";
+import Mypage from "../components/Mypage";
+import Blog from "../components/Blog";
+import Memberupdate from "../components/Memberupdate";
+import ToSub from "../components/ToSub";
+import BySub from "../components/BySub";
+
+const routes = [
+  {
+    path: "/mypage",
+    name: "Mypage",
+    component: Mypage
+  },
+  {
+    path: "/member/:email",
+    name: "Memberupdate",
+    component: Memberupdate
+  },
+  {
+    path: "/blog/:id",
+    name: "Blog",
+    component: Blog
+  },
+  {
+    path: "/tosub/:email/:page",
+    name: "ToSub",
+    component: ToSub
+  },
+  {
+    path: "/bysub/:email/:page",
+    name: "BySub",
+    component: BySub
+  }
+];
+
+const router = createRouter({
+  history: createWebHistory(process.env.BASE_URL),
+  routes
+});
+
+export default router;

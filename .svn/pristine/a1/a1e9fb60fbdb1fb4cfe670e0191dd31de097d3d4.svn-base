@@ -1,0 +1,57 @@
+<template>
+  <div id="nav">
+    <header>
+      <span>Test</span>
+    </header>
+    <router-link to="/posts">게시글</router-link>
+    <router-link to="/" style="margin-right : 50px; margin-left : 50px;">
+      home
+    </router-link>
+    <main>
+      <router-view />
+    </main>
+  </div>
+</template>
+
+<script>
+// assets: .css나 .png같은 UI관련 리소스 폴더
+// components: 화면 내부에 들어갈 html 템플릿과 vue.js 함수 폴더
+// router: vue.js의 라우팅 정보 폴더
+// main.js: Vue앱을 초기화 시키는 자바스크립트
+// App.vue: 기본 디폴트 템플릿
+// index.js: vue-router를 이용해 경로를 설정하는 자바스크립트
+// api 폴더 : api 설정 js 폴더
+
+export default {
+  name: "App",
+
+  data() {
+    return {
+      publicPath: process.env.BASE_URL
+    };
+  }
+};
+</script>
+
+<style>
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+}
+
+#nav {
+  padding: 30px;
+}
+
+#nav a {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+#nav a.router-link-exact-active {
+  color: #42b983;
+}
+</style>

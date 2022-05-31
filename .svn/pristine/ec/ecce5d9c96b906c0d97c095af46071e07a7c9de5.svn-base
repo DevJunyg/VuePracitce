@@ -1,0 +1,23 @@
+package kr.co.vuelog.board.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import kr.co.vuelog.board.domain.TblCommentDTO;
+import kr.co.vuelog.board.mappers.CommentMapper;
+import kr.co.vuelog.board.service.ICommentService;
+
+@Service
+public class CommentServiceImpl implements ICommentService {
+	
+	@Autowired
+	private CommentMapper mapper;
+	
+	@Override
+	public List<TblCommentDTO> myComment(String email) {
+		return mapper.myComment(email);
+	}
+
+}

@@ -1,0 +1,68 @@
+package kr.co.vuelog;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.co.vuelog.member.service.IMemberCheckService;
+import lombok.extern.log4j.Log4j;
+
+@Controller
+@Log4j
+public class CheckController {
+	@Autowired
+	private IMemberCheckService service;
+	
+	@PostMapping("/email_chk")
+	@ResponseBody
+	public String emailchk(String email) {
+		log.info("emailchk controller.... ");
+		
+		String result = "";
+		
+		if(service.email(email) == null) {
+			log.info("존재하지 않는 이메일입니다.");
+			result = "0";
+		}else if(service.email(email) != null) {
+			log.info(email);
+			result="1";
+		}
+		
+		return result;
+	}
+	
+	@PostMapping("/id_chk")
+	@ResponseBody
+	public String idchk(String id) {
+		log.info("idchk controller.... ");
+		
+		String result = "";
+		
+		if(service.id(id) == null) {
+			log.info("존재하지 않는 아이디입니다.");
+			result = "0";
+		}else if(service.id(id) != null) {
+			log.info(id);
+			result="1";
+		}	
+		return result;
+	}
+	
+	@PostMapping("/nickname_chk")
+	@ResponseBody
+	public String nicknamechk(String nickname) {
+		log.info("nickname check controller.... ");
+		
+		String result = "";
+		
+		if(service.nickname(nickname) == null) {
+			log.info("존재하지 않는 닉네임입니다.");
+			result = "0";
+		}else if(service.id(nickname) != null) {
+			log.info(nickname);
+			result="1";
+		}	
+		return result;
+	}
+}

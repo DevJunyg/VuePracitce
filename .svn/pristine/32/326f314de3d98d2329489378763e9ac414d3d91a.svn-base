@@ -1,0 +1,26 @@
+import axios from "axios";
+
+const config = {
+  baseUrl: "http://localhost:8082/"
+};
+
+function getPostList(page) {
+  return axios.get(config.baseUrl + "posts/pages/" + page);
+}
+
+function getPost(pno) {
+  return axios.get(config.baseUrl + "posts/" + pno);
+}
+
+function registerPost() {
+  return axios.post(config.baseUrl + "posts/new");
+}
+
+function deletePost(pno) {
+  return axios.delete(config.baseUrl + "posts/" + pno);
+}
+
+export { getPostList };
+export { getPost };
+export { registerPost };
+export { deletePost };

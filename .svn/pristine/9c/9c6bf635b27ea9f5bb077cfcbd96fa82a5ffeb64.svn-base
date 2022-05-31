@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.vuelog.board.mappers.PostMapper">
+	<insert id="create">
+		INSERT INTO post(pno, title, content, email, boardtype, storage)
+      	VALUES(post_seq.nextval, #{title}, #{content}, #{email}, #{boardtype}, #{storage})
+		<selectKey keyProperty="pno" resultType="Integer" order="AFTER">
+			SELECT post_seq.currval FROM dual
+		</selectKey>
+	</insert>
+	
+	<select id="read" resultType="kr.co.vuelog.board.domain.PostDTO">
+		SELECT	*
+		FROM	post
+		WHERE	pno = #{pno}
+	</select>
+	
+	<update id="update">
+		UPDATE post 
+		SET title = #{title}, content = #{content}, update_date = SYSTIMESTAMP, storage = #{storage}, storedate = SYSTIMESTAMP
+		WHERE pno = #{pno}
+	</update>
+	
+	<update id="delete">
+		UPDATE post
+   		SET del_status = 'y', del_date = SYSTIMESTAMP
+   		WHERE pno = #{pno}
+	</update>
+	
+	
+	<sql id="criteria">
+		<if test="cri.keyword != null">
+    		<trim prefix="(" suffix=") AND">
+				title LIKE '%'||#{keyword}||'%' 
+				OR content LIKE '%'||#{keyword}||'%' 
+      		</trim>
+      	</if>
+   </sql>
+   
+   <sql id="getBoardType">
+	   <if test="cri.boardtype == '0'">
+	   		<trim prefix="(" suffix=") AND">
+				boardtype = '0'
+			</trim>
+	   </if>
+	   <if test="cri.boardtype == '1'">
+	   		<trim prefix="(" suffix=") AND">
+	   			boardtype = '1'
+	   		</trim>
+	   </if>
+   </sql>
+   
+   <sql id="getStorage">
+	   <if test="cri.storage == 'n'">
+	   		<trim prefix="(" suffix=") AND">
+				storage = 'n'
+			</trim>
+	   </if>
+	   <if test="cri.storage == 'y'">
+	   		<trim prefix="(" suffix=") AND">
+	   			storage = 'y'
+	   		</trim>
+	   </if>
+   </sql>
+   
+   <sql id="dateSorting">
+	   <if test="cri.sort == 0">
+			/*+ INDEX_DESC(post post_pno_pk) */
+	   </if>
+	   <if test="cri.sort == 1">
+	   		/*+ INDEX_ASC(post post_pno_pk) */
+	   </if>
+   </sql>
+   
+   
+   <select id="getList" resultType="kr.co.vuelog.board.domain.PostDTO">
+      <![CDATA[
+         SELECT *
+         FROM (
+               SELECT
+      ]]> 	
+               			<include refid="dateSorting"></include>
+      <![CDATA[
+               			rownum rn,
+               			pno,
+               			title,
+               			content,
+               			email,
+               			boardtype,
+               			storedate,
+               			viewcnt,
+               			comcnt,
+               			tagcnt,
+               			recomcnt,
+               			regdate,
+               			update_date
+            	FROM post
+            	WHERE 
+      ]]>
+      
+      <include refid="getBoardType"></include>
+      <include refid="criteria"></include>
+      <include refid="getStorage"></include>
+      <![CDATA[
+      			del_status = 'n'
+            	AND rownum <= #{cri.pageNum}*#{cri.amount}
+         	)	
+         WHERE rn > (#{cri.pageNum} - 1)*#{cri.amount}
+      ]]>
+   </select>
+   
+   <select id="getListWithTag" resultType="kr.co.vuelog.board.domain.PostDTO">
+		SELECT rownum rn, a.tag, b.*
+		FROM    ((SELECT tag, pno
+		          FROM tag
+		          WHERE tag = #{tag}) a),
+		        ((SELECT *
+		          FROM post
+		          WHERE del_status = 'n'
+		          AND boardtype = '1'
+		          AND storage = 'n') b)
+		WHERE a.pno = b.pno(+)
+   </select>
+   
+   <select id="getTotalCnt" resultType="int">
+      SELECT COUNT(*)
+      FROM post
+      WHERE 
+      <include refid="getBoardType"></include>
+      <include refid="criteria"></include>
+      <include refid="getStorage"></include>
+      del_status = 'n'
+   </select>
+   
+   <update id="updateViewCnt">
+     	UPDATE post 
+		SET viewcnt = viewcnt + 1
+		WHERE pno = #{pno}   
+   </update>
+   
+  
+</mapper>
+
+
+
+
+

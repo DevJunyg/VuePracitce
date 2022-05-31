@@ -1,0 +1,372 @@
+<template>
+  <router-view />
+  <div>
+    <div class="intro-y flex flex-col sm:flex-row items-center mt-8">
+      <h2 class="text-lg font-medium mr-auto">Blog Post</h2>
+      <div class="w-full sm:w-auto flex mt-4 sm:mt-0">
+        <button
+          class="button text-white bg-theme-1 shadow-md mr-2"
+          v-on:click="postWriteFn"
+          style="width: 100px"
+        >
+          <Edit2Icon class="mx-auto" style="display: inline; width: 15px" />
+          글쓰기
+        </button>
+        <div class="dropdown ml-auto sm:ml-0">
+          <button
+            class="dropdown-toggle button px-2 box text-gray-700 dark:text-gray-300"
+          >
+            <span class="w-5 h-5 flex items-center justify-center">
+              <PlusIcon class="w-4 h-4" />
+            </span>
+          </button>
+          <div class="dropdown-box w-40">
+            <div class="dropdown-box__content box dark:bg-dark-1 p-2">
+              <a
+                href=""
+                class="flex items-center block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
+              >
+                <Share2Icon class="w-4 h-4 mr-2" /> Share Post
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 게시물 미존재 alert div -->
+    <div v-if="postExistValue" style="margin-top: 5%">
+      <div
+        class="rounded-md flex items-center px-5 py-4 mb-2 bg-theme-12 text-white"
+      >
+        <AlertCircleIcon class="w-6 h-6 mr-2" /> 게시물이 존재하지 않습니다.
+      </div>
+    </div>
+
+    <div class="intro-y grid grid-cols-12 gap-6 mt-5">
+      <!-- BEGIN: Postlist Layout -->
+
+      <div
+        v-for="(postItem, $index) in postItems"
+        :key="$index"
+        class="intro-y blog col-span-12 md:col-span-6 box"
+      >
+        <div class="blog__preview image-fit">
+          <img
+            v-if="hasImage(postItem) == true"
+            alt="post img"
+            class="rounded-t-md"
+            :src="imgApi + '' + postItem.imgsrc + '/'"
+          />
+          <img
+            v-if="hasImage(postItem) == false"
+            alt="post img"
+            class="rounded-t-md"
+            src="@/assets/images/profileDefault.jpg"
+          />
+          <div class="absolute w-full flex items-center px-5 pt-6 z-10">
+            <div class="w-10 h-10 flex-none image-fit">
+              <img
+                alt="Midone Tailwind HTML Admin Template"
+                class="rounded-full"
+                src="@/assets/images/profileDefault.jpg"
+              />
+            </div>
+            <div class="ml-3 text-white mr-auto">
+              <a href="" class="font-medium">게시물 작성자</a>
+              <div class="text-xs mt-0.5">작성 시간</div>
+            </div>
+            <div class="dropdown ml-3">
+              <a
+                href="javascript:;"
+                class="blog__action dropdown-toggle w-8 h-8 flex items-center justify-center rounded-full"
+              >
+                <MoreVerticalIcon class="w-5 h-5 text-white" />
+              </a>
+              <div class="dropdown-box w-40">
+                <div class="dropdown-box__content box dark:bg-dark-1 p-2">
+                  <a
+                    href=""
+                    class="flex items-center block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
+                  >
+                    <Edit2Icon class="w-4 h-4 mr-2" /> Edit Post
+                  </a>
+                  <a
+                    href=""
+                    class="flex items-center block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
+                  >
+                    <TrashIcon class="w-4 h-4 mr-2" /> Delete Post
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="absolute bottom-0 text-white px-5 pb-6 z-10">
+            <span class="blog__category px-2 py-1 rounded">{{
+              postItem.boardtype
+            }}</span>
+            <router-link
+              :to="{ name: 'PostView', params: { pno: postItem.pno } }"
+              class="block font-medium text-xl mt-3"
+              >{{ postItem.title }}</router-link
+            >
+          </div>
+        </div>
+        <div class="p-5 text-gray-700 dark:text-gray-600">
+          {{ postItem.content.split("p") }}
+        </div>
+        <div
+          class="flex items-center px-5 py-3 border-t border-gray-200 dark:border-dark-5"
+        >
+          <Tippy
+            tag="a"
+            href=""
+            class="intro-x w-8 h-8 flex items-center justify-center rounded-full border border-gray-500 dark:border-dark-5 dark:bg-dark-5 dark:text-gray-300 text-gray-600 mr-2"
+            content="Bookmark"
+          >
+            <BookmarkIcon class="w-3 h-3" />
+          </Tippy>
+          <!-- <div class="intro-x flex mr-2">
+            <div class="intro-x w-8 h-8 image-fit">
+              <Tippy
+                tag="img"
+                alt="Midone Tailwind HTML Admin Template"
+                class="rounded-full border border-white zoom-in"
+                :src="require(`@/assets/images/${faker.photos[0]}`)"
+                :content="작성자"
+              />
+            </div>
+            <div class="intro-x w-8 h-8 image-fit -ml-4">
+              <Tippy
+                tag="img"
+                alt="Midone Tailwind HTML Admin Template"
+                class="rounded-full border border-white zoom-in"
+                :src="require(`@/assets/images/${faker.photos[1]}`)"
+                :content="faker.users[1].name"
+              />
+            </div>
+            <div class="intro-x w-8 h-8 image-fit -ml-4">
+              <Tippy
+                tag="img"
+                alt="Midone Tailwind HTML Admin Template"
+                class="rounded-full border border-white zoom-in"
+                :src="require(`@/assets/images/${faker.photos[2]}`)"
+                :content="faker.users[2].name"
+              />
+            </div>
+          </div> -->
+          <Tippy
+            tag="a"
+            href=""
+            class="intro-x w-8 h-8 flex items-center justify-center rounded-full bg-theme-14 dark:bg-dark-5 dark:text-gray-300 text-theme-10 ml-auto"
+            content="Share"
+          >
+            <Share2Icon class="w-3 h-3" />
+          </Tippy>
+          <Tippy
+            tag="a"
+            href=""
+            class="intro-x w-8 h-8 flex items-center justify-center rounded-full bg-theme-1 text-white ml-2"
+            content="Download PDF"
+          >
+            <ShareIcon class="w-3 h-3" />
+          </Tippy>
+        </div>
+        <div class="px-5 pt-3 pb-5 border-t border-gray-200 dark:border-dark-5">
+          <div class="w-full flex text-gray-600 text-xs sm:text-sm">
+            <div class="mr-2">
+              Comments:
+              <span class="font-medium">{{ postItem.comcnt }}</span>
+            </div>
+            <div class="mr-2">
+              Views: <span class="font-medium">{{ postItem.viewcnt }}k</span>
+            </div>
+            <div class="ml-auto">
+              Likes: <span class="font-medium">{{ postItem.recomcnt }}k</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END: Postlist Layout -->
+    </div>
+    <!-- 로딩바 begin 전체 데이터와 나온데이터 수가 일치하지 않을때  -->
+    <div class="loading-event" v-if="hasFetchedAllData == false">
+      <div
+        class="col-span-6 sm:col-span-3 xl:col-span-2 flex flex-col justify-end items-center"
+      >
+        <LoadingIcon icon="three-dots" class="w-8 h-8" />
+        <div class="text-center text-xs mt-2"></div>
+      </div>
+    </div>
+    <!-- 로딩바 end -->
+  </div>
+</template>
+
+<script>
+/* eslint-disable vue/no-unused-components */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+import axiosApi from "../../api/index";
+import { ref, onUnmounted, onMounted, onBeforeMount, computed } from "vue";
+import { onBeforeRouteUpdate, useRoute } from "vue-router";
+
+export default {
+  data() {
+    return {
+      imgApi: "http://localhost:8082/api/display/",
+      postexist: false,
+    };
+  },
+
+  setup() {
+    const postItems = ref([]);
+    const page = ref(0);
+    const isInitialRequestLoading = ref(true);
+    const isLoading = ref(false);
+    const criteria = ref({});
+    const postCnt = ref(0);
+    const searchKeyword = ref("");
+    const route = useRoute();
+    const postExistValue = ref(false);
+
+    const hasFetchedAllData = computed(() => {
+      return postCnt.value <= postItems.value.length;
+    });
+
+    const contestshort = (content) => {
+      if (content !== null || typeof content !== "undefined") {
+        content.value = content.split("<p>")[0].split("</p>")[0];
+      }
+      return content;
+    };
+
+    const fetchDatas = async () => {
+      page.value++;
+
+      if (searchKeyword.value == null) {
+        searchKeyword.value = "";
+      }
+
+      console.log("searchkeyword : " + searchKeyword.value);
+      // 검색내용은 파라미터로 요청
+      axiosApi
+        .get("posts/pages/" + page.value + "?keyword=" + searchKeyword.value)
+        .then((response) => {
+          for (let i = 0; i < response.data.list.length; i++) {
+            let content = response.data.list[i].content;
+
+            if (content.split('<img src="').length > 1) {
+              content = content.split('<img src="')[1].split('/">')[0];
+
+              content = content.split("/display/")[1];
+
+              response.data.list[i].imgsrc = content;
+            }
+
+            postItems.value.push(response.data.list[i]);
+          }
+          criteria.value = response.data.cri;
+
+          postCnt.value = response.data.postCnt;
+          if (postCnt.value === 0) {
+            postExistValue.value = true;
+          } else {
+            postExistValue.value = false;
+          }
+
+          console.log(
+            "총 게시물 : " +
+              postCnt.value +
+              "나온 게시물" +
+              postItems.value.length +
+              "   cri.pageNum : " +
+              criteria.value.pageNum +
+              "  cri.amount : " +
+              criteria.value.amount
+          );
+          console.log(postItems.value);
+        })
+        .catch((e) => console.log(e));
+    };
+
+    const handleScroll = async () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+        console.log(hasFetchedAllData.value || isLoading.value);
+        if (hasFetchedAllData.value || isLoading.value) {
+          return;
+        }
+        isLoading.value = true;
+        if (isLoading.value) {
+          console.log("로딩중");
+        }
+
+        await fetchDatas();
+
+        isLoading.value = false;
+      }
+    };
+
+    onBeforeRouteUpdate(async (to, from) => {
+      // 라우터 변경시 실행 함수.
+      // 라우터 keyword 쿼리값을 서버로 .
+      console.log("search router change");
+      console.log("router path : " + route.path);
+      if (route.query != null) {
+        if (to.query.keyword !== from.query.keyword) {
+          searchKeyword.value = to.query.keyword;
+
+          postItems.value = [];
+          page.value = 0;
+          await fetchDatas();
+        } else {
+          searchKeyword.value = "";
+          await fetchDatas();
+        }
+      }
+    });
+
+    onBeforeMount(async () => {
+      searchKeyword.value = route.query.keyword;
+      await fetchDatas();
+      isInitialRequestLoading.value = false;
+    });
+
+    onMounted(() => {
+      window.addEventListener("scroll", handleScroll);
+    });
+
+    onUnmounted(() => {
+      window.removeEventListener("scroll", handleScroll);
+    });
+
+    return {
+      postItems,
+      isInitialRequestLoading,
+      isLoading,
+      hasFetchedAllData,
+      postExistValue,
+      contestshort,
+    };
+  },
+  methods: {
+    hasImage: function (postItem) {
+      if (postItem.imgsrc != null) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    postWriteFn: function () {
+      this.$router.push({
+        path: "/posts",
+      });
+    },
+  },
+};
+</script>
+<style>
+.loading-event {
+  margin-left: auto;
+  margin-right: auto;
+
+  margin-top: 5%;
+}
+</style>

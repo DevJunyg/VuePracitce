@@ -1,0 +1,48 @@
+import axios from "axios";
+import { createStore } from "vuex";
+import router from "@/router/index";
+
+export default createStore({
+  state: {
+    isLogin: false,
+    isLoginError: false,
+    nickname: ""
+  },
+  mutations: {
+    loginSuccess(state) {
+      state.isLogin = true;
+      state.isLoginError = false;
+    },
+    loginError(state) {
+      state.isLogin = false;
+      state.isLoginError = true;
+      alert("아이디 또는 비밀번호가 잘못되었습니다.");
+    }
+  },
+  actions: {
+    login({ state, commit }, loginObj) {
+      axios
+        .post("http://localhost:8081/api/login/", loginObj)
+        .then(res => {
+          if (res.data === "success") {
+            axios
+              .post("http://localhost:8081/api/login/nickname", loginObj)
+              .then(response => {
+                this.state.nickname = response.data;
+                commit("loginSuccess", state);
+              })
+              .catch(error => {
+                console.log(error);
+              });
+            router.push({ name: "Home" });
+          } else if (res.data === "fail") {
+            commit("loginError", state);
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    }
+  },
+  modules: {}
+});

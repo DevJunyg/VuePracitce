@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.vuelog.member.mapper.MemberMapper">
+	
+	<!-- <select id="read" resultType="kr.co.vuelog.member.domain.MemberDTO">
+		SELECT *
+		FROM member
+		WHERE nickname = #{nickname}
+	</select> -->
+	
+	<update id="update">
+		UPDATE member
+		SET nickname = #{nickname}, update_date = systimestamp
+		WHERE email = #{email}
+	</update>
+	
+	<update id="updatePw">
+		UPDATE member
+		SET password = #{password}, update_date = systimestamp
+		WHERE nickname = #{nickname}
+	</update>
+	
+	<update id="quit">
+		UPDATE member
+		SET del_status = 'y', del_date = systimestamp
+		WHERE email = #{email}
+	</update>
+	
+	<update id="alarm">
+		UPDATE member
+		SET alarm = #{alarm}
+		WHERE nickname = #{nickname}
+	</update>
+	
+	<update id="updateSubCnt">
+		UPDATE member
+		SET subscribe = (SELECT COUNT(*)
+		                 FROM subscribe
+		                 WHERE nickname = #{nickname})
+		WHERE nickname = #{nickname}
+	</update>
+	
+	<update id="setAuthKey">
+		UPDATE member
+		SET authkey = #{authkey}
+		WHERE email = #{email}
+	</update>
+	
+	<select id="confirmAuthKey" resultType="kr.co.vuelog.member.domain.MemberDTO">
+		SELECT *
+		FROM member
+		WHERE authkey = #{authkey}
+	</select>
+	
+	<update id="testUpdate">
+		UPDATE member
+		SET subscribe = 777
+		WHERE email = #{email}
+	</update>
+	
+	<select id="email" resultType="string">
+	SELECT email
+	FROM member
+	WHERE email = #{email}
+</select>
+
+<select id="id" resultType="string">
+	SELECT id
+	FROM blog
+	WHERE id = #{id}
+</select>
+
+<select id="nickname" resultType="string">
+	SELECT nickname
+	FROM member
+	WHERE nickname = #{nickname}
+</select>
+
+<insert id="insert">
+	INSERT INTO member (email,password,nickname) 
+	VALUES (#{email},#{password},#{nickname})
+</insert>
+
+<insert id="authregister">
+		INSERT INTO member_auth (authno,email,auth)
+		VALUES (#{authno},#{email},#{auth})
+</insert>
+
+<insert id="insertblog">
+	INSERT INTO blog (blogno,email,id,blogname)
+	VALUES(#{blogno},#{email},#{id},#{blogname})
+</insert>
+
+<resultMap type="kr.co.vuelog.member.domain.MemberDTO" id="memberMap">
+	<id property="email" column="email"></id>
+	<result property="email" column="email"/>
+	<result property="password" column="password"/>
+	<result property="nickname" column="nickname"/>
+	<result property="regdate" column="regdate"/>
+	<result property="update_date" column="update_date"/>
+	<collection property="authList" resultMap="authMap"></collection>
+</resultMap>
+
+<resultMap type="kr.co.vuelog.member.domain.MemberAuthDTO" id="authMap">
+	
+	<result property="email" column="email"/>
+	<result property="auth" column="auth"/>
+</resultMap>
+
+<select id="read" resultMap="memberMap">
+	SELECT mem.email, password, nickname, regdate,update_date, auth 
+	from member mem left outer join member_auth auth 
+	on mem.email = auth.email
+	where mem.email = #{email}
+</select>
+
+<select id="chkpassword" resultType="string">
+	SELECT password
+	FROM member
+	WHERE email = #{email} and password = #{password}
+</select>	
+</mapper>

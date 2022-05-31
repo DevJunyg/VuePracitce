@@ -1,0 +1,115 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+"use strict";
+const webpack = require("webpack");
+const path = require("path");
+const CKEditorWebpackPlugin = require("@ckeditor/ckeditor5-dev-webpack-plugin");
+const { styles } = require("@ckeditor/ckeditor5-dev-utils");
+
+const targetHost = "localhost";
+
+// spring was 포트 주소 변수
+const targetPort = 8081;
+
+const port = 8081;
+let cookie;
+
+const replaceCookie = function (cookie) {
+  return cookie.replace(/\s+domain=[^\s;]+;?/, "").replace(/\s+secure;?/, "");
+};
+
+module.exports = {
+  outputDir: path.resolve(__dirname, "../" + "main/webapp/resources/static"),
+  publicPath:
+    process.env.NODE_ENV === "production" ? "/resources/static/" : "/",
+
+  devServer: {
+    port: port,
+    clientLogLevel: "debug",
+    historyApiFallback: true,
+    publicPath: "/",
+    hot: true,
+    inline: true,
+
+    transportMode: "sockjs",
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+    },
+
+    proxy: {
+      "^/api": {
+        target: `http://${targetHost}:${targetPort}`,
+        changeOrigin: true,
+
+        ws: true,
+        onProxyReq: (proxyReq) => {
+          if (proxyReq.getHeader("origin")) {
+            proxyReq.setHeader("origin", `http://${targetHost}:${targetPort}`);
+          }
+
+          if (proxyReq.getHeader("set-cookie")) {
+            proxyReq.headers["set-cookie"] = proxyReq.headers["set-cookie"].map(
+              replaceCookie
+            );
+          }
+
+          if (cookie) proxyReq.setHeader("Cookie", cookie);
+        },
+        onProxyRes: (proxyRes) => {
+          if (proxyRes.headers["set-cookie"]) {
+            cookie = proxyRes.headers["set-cookie"] = proxyRes.headers[
+              "set-cookie"
+            ].map(replaceCookie);
+          }
+        },
+      },
+      "^/(sse|api|sign|resources)": {
+        target: `http://${targetHost}:${targetPort}`,
+        changeOrigin: true,
+        onProxyRes: (proxyRes) => {
+          if (proxyRes.headers["set-cookie"]) {
+            cookie = proxyRes.headers["set-cookie"] = proxyRes.headers[
+              "set-cookie"
+            ].map(replaceCookie);
+          }
+        },
+      },
+    },
+  },
+  parallel: false,
+
+  configureWebpack: {
+    plugins: [
+      new webpack.ProvidePlugin({
+        cash: "cash-dom",
+      }),
+      new CKEditorWebpackPlugin({
+        language: "ko",
+        translationsOutputFile: /app/,
+      }),
+    ],
+  },
+  transpileDependencies: [/ckeditor5-[^/\\]+[/\\]src[/\\].+\.js$/],
+  chainWebpack: (config) => {
+    const svgRule = config.module.rule("svg");
+    svgRule.exclude.add(path.join(__dirname, "node_modules", "@ckeditor"));
+    config.module
+      .rule("cke-svg")
+      .test(/ckeditor5-[^/\\]+[/\\]theme[/\\]icons[/\\][^/\\]+\.svg$/)
+      .use("raw-loader")
+      .loader("raw-loader");
+
+    config.module
+      .rule("cke-css")
+      .test(/ckeditor5-[^/\\]+[/\\].+\.css$/)
+      .use("postcss-loader")
+      .loader("postcss-loader")
+      .tap(() => {
+        return styles.getPostCssConfig({
+          themeImporter: {
+            themePath: require.resolve("@ckeditor/ckeditor5-theme-lark"),
+          },
+          minify: true,
+        });
+      });
+  },
+};

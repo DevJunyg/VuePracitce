@@ -1,0 +1,21 @@
+{
+    "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    },
+    "eslint.alwaysShowStatus": true,
+    "eslint.workingDirectories": [
+        {"mode": "auto"}
+    ],
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        // vue에 대해 eslint 활성화
+        {
+          "language": "vue",
+          "autoFix": true
+        }
+      ],
+      // 저장시 자동 고침
+      "eslint.autoFixOnSave": true
+}

@@ -1,0 +1,65 @@
+import { createRouter, createWebHistory } from "vue-router";
+import Home from "../views/Home.vue";
+import PostList from "../components/PostList";
+import About from "../components/About";
+import PostCreate from "../components/PostCreate";
+import Post from "../components/Post";
+import CkEditor from "../components/CkEditorTest";
+import joinmem from "../components/join";
+import Login from "../components/Login";
+import scrolltest from "../components/scrolltest";
+
+const routes = [
+  {
+    path: "/",
+    name: "Home",
+    component: Home
+  },
+  {
+    path: "/posts",
+    name: "Posts",
+    component: PostList
+  },
+  {
+    path: "/posts/new",
+    name: "PostCreate",
+    component: PostCreate
+  },
+  {
+    path: "/posts/:pno",
+    name: "PostView",
+    component: Post
+  },
+  {
+    path: "/about",
+    name: "About",
+    component: About
+  },
+  {
+    path: "/ckeditor",
+    name: "CkEditor",
+    component: CkEditor
+  },
+  {
+    path: "/joinmem",
+    name: "joinmem",
+    component: joinmem
+  },
+  {
+    path: "/login",
+    name: "Login",
+    component: Login
+  },
+  {
+    path: "/scrolltest",
+    name: "scrolltest",
+    component: scrolltest
+  }
+];
+
+const router = createRouter({
+  history: createWebHistory(process.env.BASE_URL),
+  routes
+});
+
+export default router;

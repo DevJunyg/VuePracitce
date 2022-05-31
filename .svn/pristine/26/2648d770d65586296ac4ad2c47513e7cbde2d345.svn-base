@@ -1,0 +1,35 @@
+import { createRouter, createWebHistory } from "vue-router";
+import Home from "../views/Home.vue";
+import Post from "../components/Post";
+import About from "../components/About";
+import PostCreate from "../components/PostCreate";
+
+const routes = [
+  {
+    path: "/",
+    name: "Home",
+    component: Home
+  },
+  {
+    path: "/postcreate",
+    name: "PostCreate",
+    component: PostCreate
+  },
+  {
+    path: "/post",
+    name: "Post",
+    component: Post
+  },
+  {
+    path: "/about",
+    name: "About",
+    component: About
+  }
+];
+
+const router = createRouter({
+  history: createWebHistory(process.env.BASE_URL),
+  routes
+});
+
+export default router;

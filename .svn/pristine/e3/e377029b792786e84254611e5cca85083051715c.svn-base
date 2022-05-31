@@ -1,0 +1,226 @@
+<template>
+  <div>
+    <DarkModeSwitcher />
+    <MobileMenu />
+    <!-- BEGIN: Top Bar -->
+    <div
+      class="border-b border-theme-24 -mt-10 md:-mt-5 -mx-3 sm:-mx-8 px-3 sm:px-8 pt-3 md:pt-0 mb-10"
+    >
+      <div class="top-bar-boxed flex items-center">
+        <!-- BEGIN: Logo -->
+        <div
+          class="-intro-x hidden md:flex"
+          style="cursor: pointer"
+          v-on:click="logoClick"
+        >
+          <img
+            alt="Midone Tailwind HTML Admin Template"
+            class="w-6"
+            src="@/assets/images/logo.svg"
+          />
+          <span class="text-white text-lg ml-3">
+            Vue<span class="font-medium">log</span>
+          </span>
+        </div>
+        <!-- END: Logo -->
+        <!-- BEGIN: Breadcrumb -->
+        <div class="-intro-x breadcrumb breadcrumb--light mr-auto"></div>
+        <!-- END: Breadcrumb -->
+
+        <!-- BEGIN: Search -->
+        <div class="intro-x relative mr-3 sm:mr-6">
+          <div class="search hidden sm:block">
+            <input
+              type="text"
+              class="search__input input dark:bg-dark-1 placeholder-theme-13"
+              placeholder="Search..."
+              v-on:keyup="keypress"
+              v-model="keyword"
+            />
+            <SearchIcon class="search__icon dark:text-gray-300" />
+          </div>
+          <a
+            class="notification notification--light sm:hidden"
+            href="javascript:;"
+          >
+            <SearchIcon class="notification__icon dark:text-gray-300" />
+          </a>
+        </div>
+        <!-- END: Search -->
+        <!-- BEGIN: Notifications -->
+        <div
+          class="intro-x relative mr-4 sm:mr-6 relative"
+          v-if="this.state.isLogin === false"
+        >
+          <button
+            class="button w-24 rounded-full mr-1 mb-2 bg-theme-14 text-theme-10"
+            style="width: 80px; margin-top: 7px"
+            v-on:click="loginbtn"
+          >
+            로그인
+          </button>
+        </div>
+        <!-- END: Notifications -->
+        <!-- BEGIN: Account Menu -->
+        <div
+          class="intro-x dropdown w-8 h-8 relative"
+          v-if="this.state.isLogin === true"
+        >
+          <div
+            class="dropdown-toggle w-8 h-8 rounded-full overflow-hidden shadow-lg image-fit zoom-in scale-110"
+            v-if="this.state.isLogin === true"
+          >
+            <img
+              alt="Midone Tailwind HTML Admin Template"
+              :src="require(`@/assets/images/${$f()[9].photos[0]}`)"
+            />
+          </div>
+          <div class="dropdown-box w-56 dropdown">
+            <div
+              class="dropdown-box__content box bg-theme-38 dark:bg-dark-6 text-white"
+              v-if="this.state.isLogin === true"
+            >
+              <div class="p-4 border-b border-theme-40 dark:border-dark-3">
+                <div class="font-medium">{{ this.state.nickname }}님</div>
+              </div>
+              <div class="p-2">
+                <a
+                  href=""
+                  class="dropdown-toggle flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md"
+                >
+                  <UserIcon class="w-4 h-4 mr-2" /> 마이페이지
+                </a>
+                <a
+                  href=""
+                  class="dropdown-toggle flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md"
+                >
+                  <EditIcon class="w-4 h-4 mr-2" /> 블로그
+                </a>
+                <a
+                  href=""
+                  class="dropdown-toggle flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md"
+                >
+                  <LockIcon class="w-4 h-4 mr-2" /> 비밀번호 수정
+                </a>
+              </div>
+              <div class="p-2 border-t border-theme-40 dark:border-dark-3">
+                <button
+                  class="dropdown-toggle flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md"
+                  @click="logout"
+                >
+                  <ToggleRightIcon class="w-4 h-4 mr-2" />
+                  로그아웃
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- END: Account Menu -->
+      </div>
+    </div>
+    <!-- END: Top Bar -->
+    <!-- BEGIN: Content -->
+    <div class="content">
+      <router-view />
+    </div>
+    <!-- END: Content -->
+  </div>
+</template>
+
+<script>
+import { defineComponent, computed, onMounted, ref, watch } from "vue";
+import { onBeforeRouteUpdate, useRoute, useRouter } from "vue-router";
+import { useStore } from "@/store";
+import { helper as $h } from "@/utils/helper";
+import MobileMenu from "@/components/mobile-menu/Main.vue";
+import DarkModeSwitcher from "@/components/dark-mode-switcher/Main.vue";
+import {
+  searchDropdown,
+  showSearchDropdown,
+  hideSearchDropdown,
+} from "./index";
+import { nestedMenu, linkTo } from "@/layouts/side-menu";
+import login from "@/store/login-menu/index";
+
+export default defineComponent({
+  data() {
+    return {};
+  },
+  components: {
+    MobileMenu,
+    DarkModeSwitcher,
+  },
+
+  methods: {
+    keypress: function () {
+      this.$router.replace({
+        path: "/",
+        query: { keyword: this.keyword },
+      });
+    },
+    logoClick: function () {
+      this.$router.replace({
+        path: "/",
+      });
+    },
+    logout() {
+      this.state.isLogin = false;
+      this.state.nickname = "";
+      this.state.email = "";
+      this.$router.replace({
+        path: "/",
+      });
+    },
+    loginbtn: function () {
+      this.$router.push({
+        name: "login",
+        params: { routeinfo: this.$route.path },
+      });
+    },
+  },
+  setup() {
+    const route = useRoute();
+    const router = useRouter();
+    const store = useStore();
+    const formattedMenu = ref([]);
+    const topMenu = computed(() => nestedMenu(store.state.topMenu.menu, route));
+    const keyword = ref("");
+    const { state } = login;
+
+    onBeforeRouteUpdate(async (to, from) => {
+      if (to.query.keyword !== from.query.keyword) {
+        if (to.query.keyword + "" === "undefined") {
+          keyword.value = "";
+        }
+      }
+    });
+
+    watch(
+      computed(() => route.path),
+      () => {
+        formattedMenu.value = $h.toRaw(topMenu.value);
+      }
+    );
+
+    onMounted(() => {
+      console.log(state.nickname);
+      cash("body")
+        .removeClass("error-page")
+        .removeClass("login")
+        .addClass("app");
+      formattedMenu.value = $h.toRaw(topMenu.value);
+    });
+
+    return {
+      searchDropdown,
+      showSearchDropdown,
+      hideSearchDropdown,
+      formattedMenu,
+      router,
+      linkTo,
+      keyword,
+      state,
+    };
+  },
+});
+</script>

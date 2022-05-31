@@ -1,0 +1,139 @@
+<template>
+  <div class="mypage">
+    <h1>My Page</h1>
+    <h3>이메일 :{{ member.email }}</h3>
+    <h3>닉네임 :{{ member.nickname }}</h3>
+    <h4>알람 :{{ member.alarm }}</h4>
+    <div v-if="hasResult">
+      <h3>프로필 사진 x</h3>
+    </div>
+    <div v-else>
+      <h3>프로필: {{ profile.fileName }}</h3>
+    </div>
+    <h3>
+      블로그 주소:<router-link :to="{ name: 'Blog', params: { id: blog.id } }">
+        {{ blog.id }}</router-link
+      >
+    </h3>
+    <router-link
+      :to="{ name: 'Memberupdate', params: { email: member.email } }"
+    >
+      회원 정보 수정
+    </router-link>
+    |
+    <router-link
+      :to="{ name: 'ToSub', params: { email: member.email, page: 1 } }"
+    >
+      구독 정보 확인
+    </router-link>
+    <p>{{ message }}</p>
+    <div>
+      작성 글 리스트
+      <ul v-for="myposts in myposts" :key="myposts.pno">
+        <li>글 제목 : {{ myposts.title }}</li>
+        <li>글 내용 : {{ myposts.content }}</li>
+      </ul>
+    </div>
+    <div>
+      임시 글 리스트
+      <ul v-for="mystorage in mystorage" :key="mystorage.pno">
+        <li>글 제목 : {{ mystorage.title }}</li>
+        <li>글 내용 : {{ mystorage.content }}</li>
+      </ul>
+    </div>
+    <div>
+      댓글 리스트
+      <ul v-for="mycomments in mycomments" :key="mycomments.cno">
+        <li>댓글 내용 : {{ mycomments.content }}</li>
+        <li>댓글 작성 시간 : {{ mycomments.regdate }}</li>
+      </ul>
+    </div>
+    <button @click="quitMember(email)">
+      회원 탈퇴
+    </button>
+  </div>
+</template>
+
+<script>
+import { getMember } from "../api/index.js";
+import { quitMember } from "../api/index.js";
+import { myPosts } from "../api/index.js";
+import { myStorage } from "../api/index.js";
+import { myComments } from "../api/index.js";
+
+export default {
+  name: "mypage",
+  data() {
+    return {
+      email: "test@test.com",
+      member: {},
+      blog: {},
+      profile: {},
+      message: "",
+      myposts: [],
+      mystorage: [],
+      mycomments: []
+    };
+  },
+  computed: {
+    hasResult: function() {
+      return this.profile == null;
+    }
+  },
+  created() {
+    console.log(this.email);
+    this.getMember(this.email);
+    this.myPosts(this.email);
+    this.myStorage(this.email);
+    this.myComments(this.email);
+  },
+  methods: {
+    getMember: function(email) {
+      getMember(email)
+        .then(response => {
+          this.member = response.data;
+          this.blog = this.member.myBlog;
+          this.profile = this.member.profileDTO;
+          console.log("Member: " + this.member);
+          console.log("Blog: " + this.blog);
+          console.log("Profile: " + this.profile);
+        })
+        .catch(e => console.log(e));
+    },
+    quitMember: function(email) {
+      if (confirm("정말 탈퇴하시겠습니까?")) {
+        quitMember(email)
+          .then(response => {
+            this.message = response.data;
+            console.log(response.data);
+          })
+          .catch(e => console.log(e));
+      }
+    },
+    myPosts: function(email) {
+      myPosts(email)
+        .then(response => {
+          this.myposts = response.data;
+          console.log("myposts : " + this.myposts);
+        })
+        .catch(e => console.log(e));
+    },
+    myStorage: function(email) {
+      myStorage(email)
+        .then(response => {
+          this.mystorage = response.data;
+          console.log("mystorage : " + this.mystorage);
+        })
+        .catch(e => console.log(e));
+    },
+    myComments: function(email) {
+      myComments(email)
+        .then(response => {
+          this.mycomments = response.data;
+          console.log("mycomments : " + this.mycomments);
+        })
+        .catch(e => console.log(e));
+    }
+  }
+};
+</script>

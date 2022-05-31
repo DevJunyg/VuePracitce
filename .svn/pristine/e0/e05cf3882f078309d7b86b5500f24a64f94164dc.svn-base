@@ -1,0 +1,267 @@
+<template>
+  <div>
+    <DarkModeSwitcher />
+    <div class="container sm:px-10">
+      <div class="block xl:grid grid-cols-2 gap-4">
+        <!-- BEGIN: Register Info -->
+        <div class="hidden xl:flex flex-col min-h-screen">
+          <a
+            v-on:click="mainfn"
+            href="javascript:;"
+            class="-intro-x flex items-center pt-5"
+          >
+            <img
+              alt="Midone Tailwind HTML Admin Template"
+              class="w-6"
+              :src="require(`@/assets/images/logo.svg`)"
+            />
+            <span class="text-white text-lg ml-3">
+              Vue<span class="font-medium">log</span>
+            </span>
+          </a>
+          <div class="my-auto">
+            <img
+              alt="Midone Tailwind HTML Admin Template"
+              class="-intro-x w-1/2 -mt-16"
+              :src="require(`@/assets/images/illustration.svg`)"
+            />
+            <div
+              class="-intro-x text-white font-medium text-4xl leading-tight mt-10"
+            >
+              쉽고 간단하게 Vuelog를 시작해보세요
+            </div>
+            <div
+              class="-intro-x mt-5 text-lg text-white dark:text-gray-500"
+            ></div>
+          </div>
+        </div>
+        <!-- END: Register Info -->
+        <!-- BEGIN: Register Form -->
+        <div class="h-screen xl:h-auto flex py-5 xl:py-0 my-10 xl:my-0">
+          <div
+            class="my-auto mx-auto xl:ml-20 bg-white xl:bg-transparent px-5 sm:px-8 py-8 xl:p-0 rounded-md shadow-md xl:shadow-none w-full sm:w-3/4 lg:w-2/4 xl:w-auto"
+          >
+            <h2
+              class="intro-x font-bold text-2xl xl:text-3xl text-center xl:text-left"
+            >
+              가입하기
+            </h2>
+            <div class="intro-x mt-8">
+              <input
+                type="text"
+                class="intro-x login__input input input--lg border border-gray-300 block"
+                placeholder="이메일"
+                v-model="mDto.email"
+                v-on:keyup="emailkeyupfn"
+              />
+              <input
+                type="password"
+                class="intro-x login__input input input--lg border border-gray-300 block mt-4"
+                placeholder="비밀번호"
+                v-model="mDto.password"
+                v-on:keyup="pwkeyupfn"
+              />
+              <input
+                type="text"
+                class="intro-x login__input input input--lg border border-gray-300 block mt-4"
+                placeholder="닉네임"
+                v-model="mDto.nickname"
+                v-on:keyup="nickkeyupfn"
+              />
+              <input
+                type="text"
+                class="intro-x login__input input input--lg border border-gray-300 block mt-4"
+                placeholder="블로그주소"
+                v-model="mDto.id"
+                v-on:keyup="idkeyupfn"
+              />
+              <div class="intro-x w-full grid grid-cols-12 gap-4 h-1 mt-3">
+                <div
+                  v-bind:class="classTarget.classTarget1"
+                  class="col-span-3 h-full rounded bg-theme-6"
+                ></div>
+                <div
+                  v-bind:class="classTarget.classTarget2"
+                  class="col-span-3 h-full rounded bg-theme-6"
+                ></div>
+                <div
+                  v-bind:class="classTarget.classTarget3"
+                  class="col-span-3 h-full rounded bg-theme-6"
+                ></div>
+                <div
+                  v-bind:class="classTarget.classTarget4"
+                  class="col-span-3 h-full rounded bg-theme-6"
+                ></div>
+              </div>
+            </div>
+            <div
+              class="intro-x flex items-center text-gray-700 dark:text-gray-600 mt-4 text-xs sm:text-sm"
+            >
+              <label class="cursor-pointer select-none" for="remember-me"
+                >이미 계정이 있으신가요?</label
+              >
+              <a
+                class="text-theme-1 dark:text-theme-10 ml-1"
+                href="javascript:;"
+                v-on:click="loginfn"
+                >로그인</a
+              >
+            </div>
+            <div class="intro-x mt-5 xl:mt-8 text-center xl:text-left">
+              <a
+                href="javascript:;"
+                data-toggle="modal"
+                v-bind:data-target="modalTarget"
+                class="button button--lg w-full xl:w-32 text-white bg-theme-1 xl:mr-3 align-top"
+                @click="btnConfirm"
+                style="width: 100%"
+              >
+                가입하기
+              </a>
+            </div>
+          </div>
+        </div>
+        <!-- END: Register Form -->
+      </div>
+    </div>
+  </div>
+  <div id="basic-modal-preview2" class="modal">
+    <div class="modal__content p-10 text-center">
+      <AlertCircleIcon
+        class="mx-auto"
+        style="margin-bottom: 10px"
+      />가입해주셔서 감사합니다!
+    </div>
+  </div>
+
+  <div id="basic-modal-preview1" class="modal">
+    <div class="modal__content p-10 text-center">
+      <AlertCircleIcon class="mx-auto" style="margin-bottom: 10px" />가입 정보를
+      확인해주세요
+    </div>
+  </div>
+</template>
+
+<script>
+import { defineComponent, onMounted } from "vue";
+import DarkModeSwitcher from "@/components/dark-mode-switcher/Main.vue";
+import axiosApi from "../../api/index";
+import router from "@/router";
+
+export default defineComponent({
+  components: {
+    DarkModeSwitcher,
+  },
+  data() {
+    return {
+      mDto: { email: "", password: "", nickname: "", id: "" },
+      classTarget: {
+        classTarget1: "col-span-3 h-full rounded bg-theme-6",
+        classTarget2: "col-span-3 h-full rounded bg-theme-6",
+        classTarget3: "col-span-3 h-full rounded bg-theme-6",
+        classTarget4: "col-span-3 h-full rounded bg-theme-6",
+      },
+      confirmCheck: {
+        emailcheck: false,
+        passwordcheck: false,
+        nicknamecheck: false,
+        idcheck: false,
+      },
+      modalTarget: "#basic-modal-preview1",
+    };
+  },
+  methods: {
+    loginfn: function () {
+      router.push({ name: "login", params: { routeinfo: this.$route.path } });
+    },
+    mainfn: function () {
+      router.push("/");
+    },
+    btnConfirm: function () {
+      if (
+        this.confirmCheck.emailcheck &&
+        this.confirmCheck.passwordcheck &&
+        this.confirmCheck.nicknamecheck &&
+        this.confirmCheck.idcheck
+      ) {
+        this.modalTarget = "#basic-modal-preview2";
+        axiosApi
+          .post("/join/joinok", this.mDto)
+          .then(() => router.push("/login"));
+      } else {
+        this.modalTarget = "#basic-modal-preview1";
+      }
+    },
+    emailkeyupfn: function () {
+      const email = this.mDto.email;
+      if (typeof email !== "undefined") {
+        axiosApi.post("email_chk", this.mDto).then((response) => {
+          if (email.length > 4 && response.data !== 1) {
+            this.classTarget.classTarget1 =
+              "col-span-3 h-full rounded bg-theme-9";
+            this.confirmCheck.emailcheck = true;
+          } else {
+            this.classTarget.classTarget1 =
+              "col-span-3 h-full rounded bg-theme-6";
+            this.confirmCheck.emailcheck = false;
+          }
+        });
+      }
+    },
+    pwkeyupfn: function () {
+      const pw = this.mDto.password;
+      if (typeof pw !== "undefined") {
+        if (pw.length > 5) {
+          this.classTarget.classTarget2 =
+            "col-span-3 h-full rounded bg-theme-9";
+          this.confirmCheck.passwordcheck = true;
+        } else {
+          this.classTarget.classTarget2 =
+            "col-span-3 h-full rounded bg-theme-6";
+          this.confirmCheck.passwordcheck = false;
+        }
+      }
+    },
+    nickkeyupfn: function () {
+      const nick = this.mDto.nickname;
+      axiosApi.post("nickname_chk", this.mDto).then((response) => {
+        if (typeof nick !== "undefined") {
+          if (nick.length > 1 && response.data !== 1) {
+            this.classTarget.classTarget3 =
+              "col-span-3 h-full rounded bg-theme-9";
+            this.confirmCheck.nicknamecheck = true;
+          } else {
+            this.classTarget.classTarget3 =
+              "col-span-3 h-full rounded bg-theme-6";
+            this.confirmCheck.nicknamecheck = false;
+          }
+        }
+      });
+    },
+    idkeyupfn: function () {
+      const id = this.mDto.id;
+      axiosApi.post("id_chk", this.mDto.id).then((response) => {
+        if (typeof id !== "undefined") {
+          if (id.length > 1 && response.data !== 1) {
+            this.classTarget.classTarget4 =
+              "col-span-3 h-full rounded bg-theme-9";
+            this.confirmCheck.idcheck = true;
+          } else {
+            this.classTarget.classTarget4 =
+              "col-span-3 h-full rounded bg-theme-6";
+            this.confirmCheck.idcheck = false;
+          }
+        }
+      });
+    },
+  },
+  setup() {
+    onMounted(() => {
+      cash("body")
+        .removeClass("app")
+        .removeClass("error-page")
+        .addClass("login");
+    });
+  },
+});
+</script>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.vuelog.board.mappers.TagMapper">
+	<insert id="create">
+		INSERT INTO TAG(tno, tag, pno)
+      	VALUES(TAG_SEQ.NEXTVAL, #{tag}, #{pno})
+	</insert>
+   	
+   	<select id="read" resultType="kr.co.vuelog.board.domain.TagDTO">
+   		SELECT *
+   		FROM TAG
+   		WHERE tno = #{tno}
+   	</select>
+   	
+	<delete id="delete">
+		DELETE 
+		FROM TAG
+		WHERE tno = #{tno}
+	</delete>
+	
+	<select id="findByPno" resultType="kr.co.vuelog.board.domain.TagDTO">
+		SELECT *
+		FROM TAG
+		WHERE pno = #{pno}
+	</select>
+	
+	<delete id="deleteAll">
+		DELETE 
+		FROM TAG
+		WHERE pno = #{pno}
+	</delete>
+	
+	<select id="findByTagName">
+		SELECT *
+		FROM TAG
+		WHERE tag = #{tag}
+	</select>
+</mapper>
+
+
+
+
+

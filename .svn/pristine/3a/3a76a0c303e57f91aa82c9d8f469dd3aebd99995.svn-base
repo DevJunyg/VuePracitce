@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.vuelog.board.mappers.CommentMapper">
+	
+	<select id="myComment" resultType="kr.co.vuelog.board.domain.CommentDTO">
+		<![CDATA[
+		SELECT *
+			FROM (SELECT *
+			      FROM tblcomment
+			      WHERE email = #{email} AND del_status = 'n'
+			      ORDER BY regdate DESC)
+			WHERE rownum < 6
+		]]>
+	</select>
+	
+	
+	<insert id="insert">
+	
+		 INSERT INTO tblcomment(cno, email, content, pno )
+         VALUES(comment_seq.nextval, #{email},#{content},#{pno})
+		
+	</insert>
+	
+	<select id="read" resultType="kr.co.vuelog.board.domain.CommentDTO">
+		SELECT *
+		FROM tblcomment
+		WHERE cno = #{cno}
+		
+	</select>
+	<select id="getTotalCommentCnt" resultType="int">
+		SELECT count(*)
+		FROM tblcomment
+		WHERE pno = #{pno}
+		AND del_status = 'n'
+	</select>
+	
+    <update id="delete">
+		UPDATE tblcomment
+   		SET del_status = 'y', del_date = SYSTIMESTAMP
+   		WHERE cno = #{cno}
+	</update>
+	
+	<update id="update">
+		UPDATE tblcomment
+		SET content = #{content}, 
+		update_date = sysdate
+		WHERE cno = #{cno}
+	</update>
+	
+	<update id="updatePostCommCnt">
+		UPDATE post
+		SET comcnt = (SELECT count(*)
+						FROM tblcomment
+						WHERE pno = #{pno}
+						AND del_status = 'n')
+		WHERE pno = #{pno}
+	</update>
+	
+	<select id="getListWithPaging" resultType="kr.co.vuelog.board.domain.CommentDTO">
+      <![CDATA[
+         SELECT cno,
+                pno,
+                content,
+                email,
+                regdate,
+                update_date
+         FROM (
+              SELECT /*+ INDEX(tblcomment tblcomment_cno_pk)*/
+                     rownum rn,
+                     cno,
+                     pno,
+                     content,
+                     email,
+                     regdate,
+                     update_date
+              FROM tblcomment
+              WHERE pno = #{pno}
+              AND cno > 0
+              AND del_status = 'n'
+              AND rownum <= #{cri.pageNum} * #{cri.amount})
+         WHERE rn > (#{cri.pageNum} - 1) * #{cri.amount}
+      ]]>
+   </select> 
+	
+	
+	<!-- <select id="getListWithPaging" resultType="kr.co.vuelog.board.domain.CommentDTO">
+      <![CDATA[
+         SELECT *
+         FROM (
+               SELECT
+      ]]> 	
+               			<include refid="dateSorting"></include>
+      <![CDATA[
+               			rownum rn,
+               			cno,
+						email,
+						content,
+						pno,
+						tagemail,
+						regdate,
+						update_date,
+						del_status,
+						del_date,
+            	FROM tblcomment
+            	WHERE 
+      ]]>
+      <include refid="criteria"></include>
+      <include refid="email"></include>
+      <![CDATA[
+      			del_status = 'n'
+            	AND rownum <= #{cri.pageNum}*#{cri.amount}
+         	)	
+         WHERE rn > (#{cri.pageNum} - 1)*#{cri.amount}
+      ]]>
+        
+   </select> -->
+	
+	<select id="getCountByPno" resultType="int">
+		<![CDATA[
+			SELECT count(cno)
+			FROM tblcomment
+			WHERE pno = #{pno}
+		]]>		
+	</select>
+	
+</mapper>

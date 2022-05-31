@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/security 
+						http://www.springframework.org/schema/security/spring-security.xsd
+						http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans.xsd">
+	<security:http pattern="/**/*.js" security="none"/>
+	<security:http pattern="/**/*.css" security="none"/>
+	<security:http pattern="/images/*" security="none"/>
+	
+	<bean id="customDeniedHandler" class="kr.co.vuelog.security.CustomDeniedHandler"/>
+	<bean id="customAuthenticationSuccessHandler" class="kr.co.vuelog.security.CustomAuthenticationSuccessHandler"/>
+	<bean id="customLogoutSuccessHandler" class="kr.co.vuelog.security.CustomLogoutSuccessHandler"></bean>
+	<!-- <bean id="customPasswordEncoder" class="com.test.security.CustomNoOppasswordEncoder"></bean>
+	 -->
+	 <bean id="bycryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"></bean>
+	 <bean id="customuserDetailsService" class="kr.co.vuelog.security.CustomUserDetailsService"></bean>
+	
+	<security:http auto-config="true" >
+		<security:intercept-url pattern="/sample/admin" access="hasRole('ROLE_ADMIN')"/>
+		<security:intercept-url pattern="/sample/member" access="hasRole('ROLE_MEMBER')"/>
+		<security:intercept-url pattern="/sample/all" access="permitAll"/>
+		<security:form-login
+			login-page="/login/customLogin"
+			authentication-success-handler-ref="customAuthenticationSuccessHandler"	
+		/>
+		<security:csrf disabled="true"/>
+		<security:logout 
+			logout-url="/login/customLogout" 
+			invalidate-session="true"
+			success-handler-ref="customLogoutSuccessHandler" 
+			/>
+		
+		<security:access-denied-handler ref="customDeniedHandler"/>
+		
+	</security:http>
+	
+	<security:authentication-manager>
+
+		<security:authentication-provider
+			user-service-ref="customuserDetailsService"
+		>
+			<!-- <security:jdbc-user-service data-source-ref="dataSource"/> -->
+			<!-- <security:user-service>
+				<security:user name="member" password="1234" authorities="ROLE_MEMBER"/>
+				<security:user name="admin" password="1234" authorities="ROLE_ADMIN,ROLE_MEMBER"/>
+			</security:user-service>
+			 -->
+			<!-- <security:password-encoder ref="bycryptPasswordEncoder"></security:password-encoder>
+			<security:jdbc-user-service data-source-ref="dataSource"
+				users-by-username-query = "select userid, userpw, enabled from tbl_member where userid = ?"
+				authorities-by-username-query="select userid, auth from tbl_member_auth where userid = ? "
+			/> -->
+			
+		</security:authentication-provider>
+	</security:authentication-manager>
+
+</beans>

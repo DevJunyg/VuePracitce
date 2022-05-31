@@ -1,0 +1,127 @@
+<template>
+  <div class="posts">
+    <div>
+      게시판 테스트
+      <ul v-for="(postItem, $index) in postItems" :key="$index">
+        <li>
+          {{ $index + 1 }}
+          <router-link
+            :to="{ name: 'PostView', params: { pno: postItem.pno } }"
+          >
+            게시물 제목 : {{ postItem.title }}
+          </router-link>
+          <!-- 1번째 사진 메인 -->
+          <div v-if="hasImage(postItem)">
+            <img
+              :src="postItem.attachList[0].fileName + '/'"
+              alt=""
+              style="width : 200px; heigh : 150px;"
+            />
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div style="margin-bottom : 100px;"></div>
+    <router-link to="/posts/new">게시글 넣어보기</router-link>
+    <router-view />
+  </div>
+</template>
+
+<script>
+import { getAttachList, getPostList } from "../api/index.js";
+
+export default {
+  name: "posts",
+  data: () => {
+    return {
+      postItems: [],
+      publicPath: process.env.BASE_URL,
+      scrollY: 0,
+      timer: null
+    };
+  },
+
+  created() {
+    this.getList();
+  },
+  // created() {
+  //   // 핸들러 등록하기
+  //   window.addEventListener("scroll", this.handleScroll);
+  // },
+  // destroyed() {
+  //   // 핸들러 제거하기
+  //   window.removeEventListener("scroll", this.handleScroll);
+  // },
+
+  methods: {
+    // 초기화 함수를 정의
+    getList: function() {
+      getPostList(1)
+        .then(response => {
+          this.postItems = response.data; // postItems를 위 data 에서 배열로 초기화해주고 데이터를 넣는다.
+          // console.log("게시물 >>> ");
+          // console.log(this.postItems);
+
+          for (let i = 0; i < this.postItems.length; i++) {
+            const element = this.postItems[i];
+            getAttachList(element.pno)
+              .then(response => {
+                this.postItems[i].attachList = response.data;
+                // console.log("게시물 이미지 >>> ");
+                // console.log(this.postItems[i].attachList);
+              })
+              .catch(e => console.log(e));
+          }
+        })
+        .catch(e => console.log(e));
+    },
+    // db에 이미지를 포함하는지 attachlist가 null이면 length자체가 오류
+    hasImage: function(postItem) {
+      if (postItem.attachList != null) {
+        if (postItem.attachList.length > 0) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+
+    // handleScroll: function() {
+    //   if (this.timer === null) {
+    //     this.timer = setTimeout(
+    //       function() {
+    //         this.scrollY = window.scrollY;
+    //         clearTimeout(this.timer);
+    //         this.timer = null;
+    //       }.bind(this),
+    //       200
+    //     );
+    //   }
+    // }
+  }
+};
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style>
+h1,
+h2 {
+  font-weight: normal;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  display: inline-block;
+  margin: 0 10px;
+}
+
+a {
+  color: #35495e;
+}
+</style>

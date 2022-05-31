@@ -1,0 +1,16 @@
+.blog {
+  .blog__preview {
+    height: 320px;
+    &:before {
+      content: "";
+      @apply absolute w-full h-full top-0 left-0 z-10;
+      background: linear-gradient(to top, #000000d9, #00000045);
+    }
+  }
+  .blog__category {
+    background: #0c09093d;
+  }
+  .blog__action {
+    background: #ffffff3d;
+  }
+}

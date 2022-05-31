@@ -1,0 +1,93 @@
+<template>
+  <div id="app">
+    <h1>Random User</h1>
+    <div class="person" v-for="(person, $index) in posts" :key="$index">
+      <div class="left"></div>
+      <div class="right">
+        <p>{{ person.title }}</p>
+        <ul>
+          <li><strong>------------</strong></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import axios from "axios";
+import { ref, onUnmounted, onMounted } from "vue";
+
+export default {
+  data() {
+    return {
+      persons: []
+    };
+  },
+
+  setup() {
+    const posts = ref([]);
+    const page = 1;
+
+    const fetchUsers = async () => {
+      axios
+        .get(`http://localhost:8082/api/posts/pages/${page}`)
+        .then(response => {
+          posts.value = response.data;
+        });
+    };
+
+    // return the data/methods that we'll use in the template
+    return {
+      posts
+    };
+
+    const handleScroll = () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+        console.log("yay!");
+      }
+    };
+
+    onMounted(() => {
+      window.addEventListener("scroll", handleScroll);
+    });
+
+    onUnmounted(() => {
+      window.removeEventListener("scroll", handleScroll);
+    });
+  }
+
+  // methods: {
+  //   getInitialUsers() {
+  //     axios
+  //       .get(`http://localhost:8082/api/posts/pages/${this.page}`)
+  //       .then(response => {
+  //         this.persons = response.data;
+  //       });
+  //   },
+
+  //   scroll() {
+  //     window.onscroll = () => {
+  //       let bottomOfWindow =
+  //         document.documentElement.scrollTop + window.innerHeight ===
+  //         document.documentElement.offsetHeight;
+
+  //       if (bottomOfWindow) {
+  //         axios
+  //           .get(`http://localhost:8082/api/posts/pages/${this.page}`)
+  //           .then(response => {
+  //             this.persons = response.data;
+  //             this.page += 1;
+  //           });
+  //       }
+  //     };
+  //   }
+  // },
+  // onBeforeMount(() => {
+  //   this.getInitialUsers();
+  // },
+  // mounted() {
+  //   this.scroll();
+  // }
+  // fetch users before the component is mounted
+};
+</script>

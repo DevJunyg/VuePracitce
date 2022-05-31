@@ -1,0 +1,229 @@
+<template>
+  <div class="postcreate">
+    <form role="form">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="게시물 제목"
+        v-model="postDto.title"
+      /><br /><br />
+      <!-- <input
+        type="text"
+        class="form-control"
+        placeholder="게시물 내용"
+        v-model="postDto.content"
+      /> -->
+
+      <ckeditor
+        :editor="editor"
+        v-model="postDto.content"
+        :config="editorConfig"
+        class="ckeditor"
+      ></ckeditor>
+
+      <br /><br /><br />
+      <input
+        type="text"
+        class="form-control"
+        placeholder="이메일"
+        v-model="postDto.email"
+      />
+      <br /><br /><br />
+      <input type="number" class="form-control" v-model="postDto.boardtype" />
+      <input type="number" class="form-control" v-model="postDto.storage" />
+    </form>
+    <button v-on:click="addPost">글 등록</button>
+
+    <button @click="emptyEditor">글 리셋</button>
+
+    <h2>Editor data</h2>
+    <code>{{ postDto.content }}</code>
+  </div>
+</template>
+
+<script>
+// import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import ClassicEditor from "@ckeditor/ckeditor5-editor-classic/src/classiceditor";
+
+import { registerPost } from "../api/index.js";
+
+import "@ckeditor/ckeditor5-build-classic/build/translations/ko";
+
+import EssentialsPlugin from "@ckeditor/ckeditor5-essentials/src/essentials";
+import BoldPlugin from "@ckeditor/ckeditor5-basic-styles/src/bold";
+import ItalicPlugin from "@ckeditor/ckeditor5-basic-styles/src/italic";
+import LinkPlugin from "@ckeditor/ckeditor5-link/src/link";
+import ParagraphPlugin from "@ckeditor/ckeditor5-paragraph/src/paragraph";
+
+import Image from "@ckeditor/ckeditor5-image/src/image.js";
+import ImageCaption from "@ckeditor/ckeditor5-image/src/imagecaption.js";
+import ImageResize from "@ckeditor/ckeditor5-image/src/imageresize.js";
+import ImageStyle from "@ckeditor/ckeditor5-image/src/imagestyle.js";
+import ImageToolbar from "@ckeditor/ckeditor5-image/src/imagetoolbar.js";
+import ImageUpload from "@ckeditor/ckeditor5-image/src/imageupload.js";
+import EasyImage from "@ckeditor/ckeditor5-easy-image/src/easyimage.js";
+
+import FontColor from "@ckeditor/ckeditor5-font/src/fontcolor.js";
+import FontFamily from "@ckeditor/ckeditor5-font/src/fontfamily.js";
+import FontSize from "@ckeditor/ckeditor5-font/src/fontsize.js";
+import Heading from "@ckeditor/ckeditor5-heading/src/heading.js";
+
+import MyUploadAdapter from "../UploadAdaptor.js";
+
+export default {
+  name: "postcreate",
+
+  data() {
+    return {
+      postDto: {},
+      editor: ClassicEditor,
+
+      editorConfig: {
+        language: "ko",
+        extraPlugins: [this.MyUploadAdapterPlugin],
+        mediaEmbed: {
+          previewsInData: true
+        },
+        plugins: [
+          EssentialsPlugin,
+          BoldPlugin,
+          ItalicPlugin,
+          LinkPlugin,
+          ParagraphPlugin,
+          Image,
+          ImageCaption,
+          ImageResize,
+          ImageStyle,
+          ImageToolbar,
+          ImageUpload,
+          FontColor,
+          FontFamily,
+          FontSize,
+          Heading,
+          EasyImage
+        ],
+
+        toolbar: {
+          items: [
+            "bold",
+            "italic",
+            "link",
+            "undo",
+            "redo",
+            "imageUpload",
+            "imageResize",
+            "fontcolor",
+            "fontfamily",
+            "fontsize",
+            "heading"
+          ]
+        },
+
+        image: {
+          // Configure the available styles.
+          styles: ["alignLeft", "alignCenter", "alignRight"],
+
+          // Configure the available image resize options.
+          resizeOptions: [
+            {
+              name: "imageResize:original",
+              icon: "original",
+              value: null
+            },
+            {
+              name: "imageResize:50",
+              icon: "medium",
+              value: "50"
+            },
+            {
+              name: "imageResize:75",
+              icon: "large",
+              value: "75"
+            }
+          ],
+
+          // You need to configure the image toolbar, too, so it shows the new style
+          // buttons as well as the resize buttons.
+          toolbar: [
+            "imageStyle:alignLeft",
+            "imageStyle:alignCenter",
+            "imageStyle:alignRight",
+            "|",
+            "imageResize:50",
+            "imageResize:75",
+            "imageResize:original",
+            "|",
+            "imageTextAlternative"
+          ]
+        }
+      }
+    };
+  },
+
+  methods: {
+    // 초기화 함수를 정의
+    addPost: function(event) {
+      event.preventDefault();
+
+      let vm = this;
+
+      let src = this.postDto.content.split('<img src="');
+      let fileName = [];
+
+      if (src.length > 2) {
+        for (let i = 1; i < src.length; i++) {
+          let srcmap = {
+            fileName: src[i].split('/">')[0]
+          };
+          fileName.push(srcmap);
+        }
+      } else if (src.length == 2) {
+        let srcmap = {
+          fileName: src[src.length - 1].split('/">')
+        };
+        fileName.push(srcmap);
+      }
+      vm.postDto.attachList = fileName;
+
+      registerPost(vm.postDto) // RESTful API에 POST 콜
+        .then(() => {
+          this.$router.replace(this.$route.query.redirect || "/posts"); // 게시글 등록 성공시 라우팅 위치
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+    emptyEditor() {
+      this.postDto.content = "";
+    },
+
+    MyUploadAdapterPlugin: function(editor) {
+      editor.plugins.get("FileRepository").createUploadAdapter = loader => {
+        return new MyUploadAdapter(loader);
+      };
+    }
+  }
+};
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style>
+h1,
+h2 {
+  font-weight: normal;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  display: inline-block;
+  margin: 0 10px;
+}
+
+a {
+  color: #35495e;
+}
+</style>

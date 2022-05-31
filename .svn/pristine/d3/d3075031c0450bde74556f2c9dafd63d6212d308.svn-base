@@ -1,0 +1,51 @@
+package kr.co.vuelog.blog.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import kr.co.vuelog.blog.domain.SubscribeDTO;
+import kr.co.vuelog.blog.mapper.SubscribeMapper;
+import kr.co.vuelog.blog.service.ISubscribeService;
+import kr.co.vuelog.board.domain.Criteria;
+import kr.co.vuelog.member.domain.MemberDTO;
+import kr.co.vuelog.member.mapper.MemberMapper;
+
+@Service
+public class SubscribeServiceImpl implements ISubscribeService {
+	
+	@Autowired
+	private SubscribeMapper mapper;
+	
+	@Override
+	public List<MemberDTO> subToList(Criteria cri) {
+		return mapper.subToList(cri);
+	}
+
+	@Override
+	public List<MemberDTO> subByList(Criteria cri) {
+		return mapper.subByList(cri);
+	}
+
+	@Override
+	public SubscribeDTO subRead(int sno) {
+		return mapper.subRead(sno);
+	}
+	
+	@Override
+	public int subInsert(SubscribeDTO sDto) {
+		return mapper.subInsert(sDto);
+	}
+
+	@Override
+	public int subDelete(int sno) {
+		return mapper.subDelete(sno);
+	}
+
+	@Override
+	public SubscribeDTO searchSub(SubscribeDTO sDto) {
+		return mapper.searchSub(sDto);
+	}
+
+}

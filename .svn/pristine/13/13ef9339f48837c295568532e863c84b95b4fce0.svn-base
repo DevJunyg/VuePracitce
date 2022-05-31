@@ -1,0 +1,70 @@
+package kr.co.vuelog;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.co.vuelog.blog.domain.BlogDTO;
+import kr.co.vuelog.member.domain.MemberAuthDTO;
+import kr.co.vuelog.member.domain.MemberDTO;
+import kr.co.vuelog.member.service.IMemberCheckService;
+import lombok.extern.log4j.Log4j;
+
+@Controller
+@Log4j
+@RequestMapping("/join")
+public class JoinController {
+
+	@Autowired
+	private IMemberCheckService service;
+	
+	@Autowired
+	private PasswordEncoder pwencode;
+	
+	@GetMapping("/joinForm")
+	public void joinForm() {
+		log.info("get joinForm.... ");
+	}
+	
+	@PostMapping("/joinOk")
+	@ResponseBody
+	public String join(String email, String id, String password, String nickname) {
+		log.info("join ok... ");
+		String result="";
+		
+		
+		MemberDTO mdto = new MemberDTO();
+		mdto.setEmail(email);
+		mdto.setNickname(nickname);
+		String bpw = pwencode.encode(password);
+		mdto.setPassword(bpw);
+		
+		log.info("testetset");
+		if(service.register(mdto)==1) {
+			log.info("회원 등록 성공");
+			result="1";
+		MemberAuthDTO adto = new MemberAuthDTO();
+		adto.setAuthno(3);
+		adto.setAuth("ROLE_MEMBER");
+		adto.setEmail(email);
+		service.authregister(adto);
+		
+		BlogDTO bdto = new BlogDTO();
+		bdto.setBlogno(5);
+		bdto.setBlogname(nickname);
+		bdto.setEmail(email);
+		bdto.setId(id);
+		
+		service.registerblog(bdto);
+		}else if(service.register(mdto)==0) {
+			result = "0";
+		}
+		
+		
+		return result;
+	}
+}

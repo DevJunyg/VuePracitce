@@ -1,0 +1,39 @@
+<template>
+  <div class="mypage">
+    <h1>Member Update</h1>
+    <label>닉네임:</label>
+    <input v-model="nickname" placeholder="닉네임" />
+    <p>{{ nickname }}</p>
+    <br /><br />
+    <label>블로그 주소:</label>
+    <input value="{{ blog.id }}" />
+    <br /><br />
+    <button v-on:click="getMember()">
+      회원 정보 수정
+    </button>
+  </div>
+</template>
+
+<script>
+import { getMember } from "../api/index.js";
+
+export default {
+  name: "mypage",
+  data() {
+    return {
+      nickname: this.nickname,
+      member: [],
+      blog: []
+    };
+  },
+  created() {
+    getMember("update4")
+      .then(response => {
+        this.member = response.data;
+        this.blog = this.member.myBlog;
+        console.log(response.data);
+      })
+      .catch(e => console.log(e));
+  }
+};
+</script>

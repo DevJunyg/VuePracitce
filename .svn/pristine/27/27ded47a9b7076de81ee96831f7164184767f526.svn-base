@@ -1,0 +1,12 @@
+package kr.co.vuelog.board.mappers;
+
+import java.util.List;
+
+import kr.co.vuelog.board.domain.TblCommentDTO;
+
+public interface CommentMapper {
+	
+	// 작성한 댓글 목록 최근 5건
+	public List<TblCommentDTO> myComment(String email);
+	
+}
