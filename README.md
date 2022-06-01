@@ -14,8 +14,13 @@
 
 웹디자인은 공개된 vue template를 변형시켰고 기 만들어진 component를 기반으로 참고하였고 </br>
 벡엔드로 spring framework 를 사용하여 서버가 필요한 기능들에 restAPI를 만들고 프론트인 Vue 로 restAPI를 호출하는 방식으로 </br>
-블로그의 기본적인 기능들인 게시물, 댓글, 회원가입, 프로필, 좋아요 등 기능을 기반으로 SPA에 맞게 스크롤 페이징 등도 적용시켜보며 만들었습니다. 
+블로그의 기본적인 기능들인 게시물, 댓글, 회원가입, 프로필, 좋아요 등 기능을 기반으로 SPA에 맞게 스크롤 페이징, 파일과 검색의 실시간 처리 등도 적용시켜보며 만들었습니다. 
 
 ## 기술
 `java` `spring framework` `javascript` `oracleDB` `Vue3.0` `restAPI` `axios` `svn` `html5` `css3` `mybatis` `mvc pattern` 등
 
+## 스토리보드
+[vuelog 스토리보드.pdf](https://github.com/DevJunyg/FirstProject/files/8816255/vuelog.pdf)
+
+## 간단 구현 이미지
+![image](https://user-images.githubusercontent.com/69786391/171461082-9fca05af-3389-4dfa-b15e-0369d3b82aec.png)
